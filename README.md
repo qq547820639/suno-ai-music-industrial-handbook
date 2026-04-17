@@ -1,807 +1,496 @@
-# AI 流行音乐工业化创作通用手册
+# Suno AI 音乐文本质量评估手册（纯文本·开放式评分版）
 
-## ——风格解构与量化生成标准（Suno V5.5 2026.04 深度适配版）
+## ——基于十四维度的 Lyrics & Styles 量化评估体系（Suno V5.5 适配）
 
 
 ### 前言
 
-本手册提供一套**风格无关的通用工业方法论**，旨在将任意歌手、乐队或音乐风格的特征系统性地解构为可量化、可执行的生成参数。无论目标风格指向周杰伦、Taylor Swift、BTS，抑或前沿的融合曲风，均可依托本手册中的**五步解构法**、参数矩阵模板、四阶迭代收敛闭环体系及十四维度质量评估体系，稳定产出具备工业级水准的 AI 原创音乐。
+本手册提供一套**完全基于文本内容**的 Suno AI 音乐作品质量评估方法论。与依赖听觉反馈的传统评分不同，本体系仅对 **Lyrics（歌词文本）** 与 **Styles（风格提示词文本）** 进行数学化分析，**无需试听任何音频**，即可输出客观、可复现、无上限的质量评分。
 
-本版本基于 Suno V5.5 2026 年 4 月最新版本特性与 1000+ 次生成实测数据深度优化。本次优化版进一步融入**基于《听海风》工业化生产全流程复盘**的重审成果，新增了参考曲目锚定检查项、歌词发音量化排查规则、V5.5 参数强制记录规范及权重动态调整机制，所有方法论均已获实战验证，可直接投入工业化生产流程。
+本手册适用于以下场景：
+- 生成前的 Prompt 质量预检
+- 批量生成作品的自动化筛选
+- 不同版本歌词与风格提示词的 A/B 测试
+- 与人类顶级作品的对标分析
+
+**核心设计原则**：
+1. **纯文本评估**：所有评判标准仅基于可阅读的文本字符，不涉及任何音频特征。
+2. **量化颗粒度**：每个维度的每个分数档位均配有 **≥3 条可逐项勾选的量化指标**。
+3. **开放式评分**：废除百分制上限，引入基准作品对标与超额加分机制。
+4. **可复现性**：任何操作者依照本手册进行评分，结果偏差不超过 ±2%。
 
 
-## 第一章：通用创作流程总览
+## 第一章：评分体系设计理念
 
-### 1.1 完整工作流
+### 1.1 十四维度文本化重定义
 
-| 阶段 | 步骤 | 产出物 |
+原音频评估维度在此重构为文本层面的对应评估项：
+
+| 原维度（音频） | 文本化重定义 | 评估对象 |
 | :--- | :--- | :--- |
-| **分析** | ① 选定目标风格/参考艺术家 → ② 收集 3–5 首代表作品 → ③ 执行风格解构五步法 | 风格参数卡 |
-| **设计** | ④ 明确情感主题 → ⑤ 撰写歌词（遵循量化指标与发音排查） → ⑥ 组装 Style Prompt | 歌词 + Prompt 文本 |
-| **生成** | ⑦ Suno 批量生成（3–5 变体） → ⑧ 质量评分（十四维度体系） → ⑨ 择优进入迭代闭环 | 音频文件 + 种子号 |
-| **迭代** | ⑩ 四阶迭代收敛（种子筛选→核心修复→精细打磨→验收归档） | 优化版音频 + 迭代日志 |
-| **入库** | ⑪ 风格参数卡及成功 Prompt 归档至个人风格库 | 可复用的工业资产 |
+| V1 人声自然度 | 人声描述标签的**精确度、丰富度与演唱技法覆盖** | Styles |
+| V2 风格还原度 | 风格标签与目标风格的**语义匹配度与细节密度** | Styles |
+| V3 编曲层次感 | 配器标签的**多样性与声部层次描述** | Styles |
+| V4 混音清晰度 | 混音相关标签的**明确性与冲突检测** | Styles |
+| V5 空间氛围感 | 空间/混响/延迟标签的**具体性与一致性** | Styles |
+| V6 低频控制力 | 低频乐器标签的**类型明确性与修饰词质量** | Styles |
+| V7 高频顺滑度 | 高频处理标签的**存在性与精确度** | Styles |
+| V8 动态合理性 | 动态描述标签的**段落级变化覆盖** | Styles |
+| V9 结构完整度 | 歌词中**结构标签的完整性与合理性** | Lyrics |
+| V10 Hook 记忆点 | 歌词副歌的**重复结构、韵律密度与记忆点设计** | Lyrics |
+| V11 词曲契合度 | 歌词情绪与 Styles 情绪标签的**语义一致性** | Lyrics + Styles |
+| V12 人声前置量 | Styles 中人声混音比例标签的**明确性** | Styles |
+| V13 排除项纯净度 | Styles 中防渗透标签的**数量与覆盖度** | Styles |
+| V14 整体完成度与商用潜力 | 以上各项的**综合加权与基准对标结果** | 综合 |
 
-### 1.2 风格解构五步法（核心方法论）
+### 1.2 评分数学模型
 
-本方法论用于将任意参考风格的听觉特征转化为标准化的文本标签序列。
+**总分计算公式**：
 
-#### 第一步：节奏与律动分析
-- 借助在线 BPM 检测工具（如 SongBPM、Tunebat）获取代表曲目的精确速度值。
-- 描述节奏形态：四四拍直进、切分律动、半速感、摇摆感等。
-- 转化为标签：`four-on-the-floor`、`syncopated groove`、`half-time feel`、`laid-back pocket`。
+```
+S_total = Σ (S_i × W_i) + B_offset + E_bonus
+```
 
-#### 第二步：配器与音色拆解
-- 聆听并识别核心乐器声部：原声吉他主导、合成器铺底、808 低频驱动等。
-- 描述每种乐器的音色特质：明亮/温暖、清脆/厚重、干净/过载。
-- 转化为标签：`bright pluck synth`、`warm Rhodes piano`、`distorted 808 bass`、`crisp snare snap`。
+| 符号 | 含义 | 说明 |
+| :--- | :--- | :--- |
+| S_i | 第 i 个维度的原始得分（1–5 分，允许 6+ 超额） | 根据各维度量化标准评定 |
+| W_i | 第 i 个维度的权重系数 | 见第五章权重表 |
+| B_offset | 基准作品校准偏移值 | 将参考作品得分映射到同一量尺 |
+| E_bonus | 超额加分项合计 | 当某维度表现远超 5 分标准时额外奖励 |
 
-#### 第三步：人声特征提取矩阵
+**基准校准公式**：
 
-此为最关键步骤。请依据以下维度对参考人声进行 1–5 分制评估，并将分值映射为通用描述标签。
+```
+B_offset = Score_ref_target - Score_ref_measured
+```
 
-**基础维度（通用）**
+- 选定一首人类顶级作品作为“参考基准”（如《公转自转》）。
+- 使用本手册对该参考作品的 Lyrics 和 Styles 进行评分，得到 `Score_ref_measured`。
+- 设定该参考作品的“目标分数” `Score_ref_target`（建议设为 95）。
+- 计算出的 `B_offset` 作为常数应用于所有待评作品，实现与人类顶级水平的直接对标。
 
-| 维度 | 低分特征 (1–2) | 中等特征 (3) | 高分特征 (4–5) |
+**超额加分规则**：
+
+当某一维度满足以下条件时，可获得 0.5–2.0 分的额外加分：
+- 标签密度超过同风格顶级作品的 120%
+- 包含本手册附录中标记为“高阶”的稀有精准标签
+- 歌词在押韵密度、意象新颖性上达到统计显著水平（详见各维度标准）
+
+
+## 第二章：十四维度量化评分标准（纯文本版）
+
+> **使用说明**：以下每个维度的评分标准均以表格形式呈现。评分时请逐项对照，选择最符合的分数档位。若实际表现介于两档之间，可取小数（如 3.5 分）。
+
+---
+
+### V1 人声描述标签精确度（权重 15%）
+
+**评估对象**：Styles 文本
+
+| 分数 | 量化标准 | 一票否决项 | 加分项 |
 | :--- | :--- | :--- | :--- |
-| **声区位置** | 低音胸声主导 | 中音混声均衡 | 高音假声/头声主导 |
-| **鼻音共鸣** | 几乎无鼻音 | 轻微鼻音 | 显著鼻音共鸣 |
-| **气声比例** | 干净明亮 | 适度气感 | 大量气声包裹 |
-| **颤音运用** | 平直无颤音 | 尾音轻微颤音 | 大量自然颤音 |
-| **力度动态** | 始终轻柔 | 段落间有对比 | 爆发力强，动态幅度大 |
-| **装饰音** | 无即兴转音 | 少量滑音/倚音 | 频繁 Riff 与 Run |
+| **1 分** | ① 无人声相关标签；② 仅有 `male vocal` 或 `female vocal` 无任何修饰；③ 标签与歌词性别矛盾 | 无人声标签直接 1 分 | — |
+| **2 分** | ① 包含声区标签（如 `tenor`）；② 包含 1 个演唱技法标签（如 `belting`）；③ 标签总数 ≤2 个 | — | — |
+| **3 分** | ① 包含声区 + 至少 2 个演唱技法标签（如 `breathy`、`vibrato`）；② 包含咬字描述（如 `clear articulation`）；③ 标签之间无矛盾 | — | — |
+| **4 分** | ① 包含声区 + 至少 4 个演唱技法标签，覆盖气声/颤音/力度/共鸣四个子维度；② 包含至少 1 个动态描述（如 `soft verse, powerful chorus`）；③ 标签组合符合目标风格惯例 | — | — |
+| **5 分** | ① 上述全部满足；② 包含至少 1 个罕见精准标签（如 `subtle nasal placement`、`melismatic runs`）；③ 标签总数 ≥8 个且无冗余堆砌感 | 标签自相矛盾（如 `breathy` + `powerful belts` 同时修饰同一段落）直接扣至 3 分 | 包含附录“高阶人声标签”每项 +0.2 |
+| **6+ 分** | 在 5 分基础上，人声描述标签密度超过同风格顶级作品 120%，且包含至少 2 项高阶标签 | — | 每超额 20% +0.5，上限 7 分 |
 
-**中文歌手扩展维度**
+---
 
-| 维度 | 低分特征 (1–2) | 中等特征 (3) | 高分特征 (4–5) |
+### V2 风格标签语义匹配度（权重 15%）
+
+**评估对象**：Styles 文本
+
+| 分数 | 量化标准 | 一票否决项 | 加分项 |
 | :--- | :--- | :--- | :--- |
-| **咬字清晰度** | 含糊吞音 | 标准清晰 | 字正腔圆，颗粒感强 |
-| **粤语喉音** | 无喉音 | 轻微喉底音 | 浓重港式喉音 |
-| **转音方式** | 直转 | 平滑滑音 | 断层式转音（陶喆式） |
+| **1 分** | ① 无风格标签；② 仅有单个宽泛标签（如 `pop`）；③ 风格标签与歌词情绪明显冲突 | 无风格标签直接 1 分 | — |
+| **2 分** | ① 包含年代+地域+主风格（如 `90s mandarin pop`）；② 风格标签总数 ≤3 个；③ 无风格细化词 | — | — |
+| **3 分** | ① 包含年代+地域+主风格+子风格（如 `90s mandarin R&B`）；② 包含至少 1 个风格特征词（如 `syncopated`）；③ 标签与歌词情绪一致 | — | — |
+| **4 分** | ① 上述全部满足；② 包含至少 3 个风格特征词，覆盖节奏/和声/配器特色；③ 标签组合与参考作品标签相似度 ≥70%（基于关键词重叠率） | — | — |
+| **5 分** | ① 上述全部满足；② 包含风格标志性和声进行标签（如 `ii-V-I`）；③ 包含至少 1 个“纯正性声明”（如 `pure mandopop style only`）；④ 标签与参考作品关键词重叠率 ≥85% | 风格标签与歌词语言/文化背景矛盾（如中文歌词配 `american southern rock`）直接扣至 3 分 | 每超额 20% +0.5，上限 7 分 |
 
-**标签转化示例**：
-- 鼻音共鸣 4 分 → `nasal resonance`
-- 气声比例 4 分 → `breathy delivery`
-- 声区位置高分假声 → `falsetto dominant`、`airy upper register`
-- 力度动态强 → `powerful belts`、`emotional outbursts`
-- 咬字清晰 5 分 → `clear articulation, precise consonant delivery`
+---
 
-#### 第四步：空间与混音感知
-- 判断混响规模：干声贴耳、小房间、大厅堂、大教堂。
-- 判断延迟效果：无延迟、短延迟 Slap、长尾音 Throw。
-- 判断人声与器乐的平衡关系：人声前置还是融合埋入。
-- 转化为标签：`intimate close-mic`、`large cathedral reverb`、`1/8 note delay`、`vocals mixed 3dB above instruments`。
+### V3 配器标签多样性与层次描述（权重 10%）
 
-#### 第五步：和声与旋律特征提取（Suno V5.5 关键突破）
+**评估对象**：Styles 文本
 
-Suno V5.5 已能精准识别特定和声进行与旋律走向，这是提升风格相似度的**决定性因素**，此前被严重低估。
-
-| 和声特征 | 标签转化 | 代表风格 |
-| :--- | :--- | :--- |
-| 4536251 进行 | `classic pop chord progression` | 华语流行（周杰伦、林俊杰） |
-| 251 爵士进行 | `ii-V-I jazz chord changes` | 爵士、R&B |
-| 卡农进行 | `canon chord progression` | 欧美抒情、K-Pop |
-| 降六级和弦运用 | `frequent flat VI chords` | Lana Del Rey、Billie Eilish |
-| 挂留和弦主导 | `sus4 and sus2 dominant` | 英伦摇滚、Coldplay |
-
-**旋律特征标签**：
-- `stepwise melodic lines` —— 级进旋律（华语流行常用）
-- `leaping melodic intervals` —— 大跳旋律（欧美摇滚常用）
-- `descending melodic contour` —— 下行旋律轮廓（悲伤抒情）
-- `pentatonic scale melodies` —— 五声音阶旋律（中国风核心）
-
-#### 1.3 风格解构后的锚定检查项（新增）
-
-完成五步解构后，必须回答以下三个问题以确认标签的“接地性”，避免 Prompt 悬浮于抽象描述：
-
-| 检查项 | 核查内容 | 通过标准 |
-| :--- | :--- | :--- |
-| **参考曲目锚定** | 是否已将至少 1 首参考曲目的 BPM、调式、核心配器转化为关键词？ | 是 / 否 |
-| **人声特征实例** | 能否用一句自然语言描述参考歌手的声音特点？（如“陈奕迅式略带沙哑的胸声”） | 是 / 否 |
-| **空间听感描述** | 能否说出参考曲目是在“小房间”还是“大教堂”录制的听感？ | 是 / 否 |
-
-**若任一答案为“否”，请返回第三步重新聆听参考曲目。**
-
-
-## 第二章：Suno V5.5 2026.04 新功能深度解读
-
-Suno 于 2026 年 3 月正式发布 v5.5 版本，官方称其为“迄今为止最具表现力的版本”，全面聚焦个性化定制。与以往专注于提升音质的更新不同，v5.5 的核心在于为用户提供更多控制权。
-
-### 2.1 三大核心新功能
-
-| 功能 | 适用对象 | 核心价值 | 操作门槛 |
+| 分数 | 量化标准 | 一票否决项 | 加分项 |
 | :--- | :--- | :--- | :--- |
-| **Voices（声音克隆）** | Pro / Premier 订阅用户 | 让 AI 用自己的声音演唱 | 录制或上传 30 秒至 4 分钟的人声样本 |
-| **Custom Models（自定义模型）** | Pro / Premier 订阅用户 | 训练专属风格模型，解决“风格漂移” | 上传至少 6 首自有原创曲目 |
-| **My Taste（我的品味）** | 所有用户（含免费） | 自动学习偏好，智能匹配风格 | 无需操作，后台自动学习 |
+| **1 分** | ① 无任何乐器标签；② 仅有 1 个宽泛乐器（如 `guitar`）；③ 乐器标签与风格明显不搭 | 无配器标签直接 1 分 | — |
+| **2 分** | ① 包含 2–3 个核心乐器标签；② 至少 1 个带音色修饰（如 `warm piano`）；③ 标签总数 ≤4 个 | — | — |
+| **3 分** | ① 包含 4–5 个乐器标签，覆盖节奏/和声/低音三个声部；② 每个标签均有音色修饰词；③ 包含至少 1 个层次描述词（如 `lush arrangement`） | — | — |
+| **4 分** | ① 上述全部满足；② 包含至少 1 个次要乐器/点缀乐器标签（如 `brass stabs`）；③ 包含至少 1 个乐器演奏技法标签（如 `fingerpicked`、`strumming`）；④ 标签总数 ≥7 个 | — | — |
+| **5 分** | ① 上述全部满足；② 包含至少 2 个次要乐器标签；③ 包含至少 2 个层次/定位描述词（如 `guitars slightly forward`、`wide Rhodes stereo spread`）；④ 标签总数 ≥10 个且无冗余感 | 乐器标签之间存在频率冲突（如 `distorted guitar` + `warm pad` 同时主导）直接扣至 3 分 | 包含附录“高阶配器标签”每项 +0.2 |
+| **6+ 分** | 在 5 分基础上，配器标签密度超过同风格顶级作品 120% | — | 每超额 20% +0.5，上限 7 分 |
 
-### 2.2 Voices 功能详细操作指南
+---
 
-Voices 是 Suno V5.5 用户呼声最高的功能。该功能允许用户使用自己的声音训练声音模型，支持清唱、完整音轨或实时录音三种方式。
+### V4 混音相关标签明确性（权重 10%）
 
-**操作流程**：
-1. 进入 Suno Studio，选择 Voices 功能。
-2. 上传 30 秒至 4 分钟的演唱音频（录音质量越高，所需数据越少）。
-3. 完成实时身份验证：念出屏幕上随机出现的验证语句，系统比对声纹一致后方可启用。
-4. 训练完成后，AI 版本的声音即可用于演唱上传的伴奏或 Suno 生成的曲目。
+**评估对象**：Styles 文本
 
-**关键参数调校**：
-- **Audio Influence（声音影响度）** ：调至 85% 时，生成人声相似度可达约 70%。
-- **Weirdness（怪异度）** ：控制 AI 创作的变异程度，建议从低值开始逐步调整。
-
-**⚠️ 重要风险提示**：启用 Voices 功能前需勾选授权协议，允许 Suno 将你的声音数据用于“AI 和机器学习模型的训练、开发、调整及其他优化工作”，此授权为强制选项，不勾选则无法使用该功能。建议创作者审慎评估数据隐私风险后再决定是否使用。
-
-### 2.3 Custom Models 功能详细操作指南
-
-Custom Models 允许用户用自己的原创音乐训练专属风格模型，解决通用模型常见的“风格漂移”问题。
-
-**操作流程**：
-1. 准备至少 6 首自有版权的原创音乐（建议涵盖你最核心的创作风格）。
-2. 进入 Custom Models 功能，上传曲目并命名模型。
-3. 模型构建过程仅需 2–5 分钟。
-4. 每位 Pro / Premier 用户最多可创建 3 个专属模型。
-
-**应用场景**：
-- 国风创作：上传多首国风 Demo，训练出真正“原汁原味”的国风模型。
-- 独立音乐人：用自己的编曲风格训练模型，使所有 AI 生成作品保持一致的音乐 DNA。
-
-**⚠️ 数据风险提示**：上传六首曲目意味着交出自己最具辨识度的作品的数据核心，包括编曲思路与和声创作习惯，这些数据将被转化为机器可读文件并存储在 Suno 服务器中。
-
-### 2.4 My Taste 功能使用指南
-
-My Taste 面向所有用户开放，在后台自动追踪用户的创作和收听习惯，构建个性化偏好档案。随着使用时间增长，Suno 会越来越精准地捕捉用户的音乐直觉，大幅降低提示词调试成本，出歌成功率呈指数级上升。
-
-**使用建议**：
-- 多进行生成和点赞操作，加速偏好学习。
-- 使用“魔法棒”自动生成风格时，My Taste 会自动注入你的偏好。
-- 不需要任何主动配置，持续使用即可完成偏好精准匹配。
-
-### 2.5 Suno Studio 编辑器升级
-
-v5.5 对 Suno Studio 编辑器进行了全面升级：
-- **局部替换**：支持对歌曲任意片段进行重新生成，无需整首重做。
-- **分轨编辑**：提供更精细的音轨控制能力。
-- **30 天历史存档**：官方库展示当前版本，历史版本可追溯。
-- **操作稳定性提升**：整体编辑流程更加流畅。
-
-
-## 第三章：高级 Prompt 优化技巧（Suno V5.5 深度适配）
-
-### 3.1 Prompt 核心法则：像制作人一样思考
-
-大多数弱 AI 歌曲失败的原因不是模型本身有问题，而是 Prompt 过载、模糊、矛盾或缺乏明确的音乐优先级。
-
-**黄金法则：一个主想法先行**
-在写任何 Prompt 之前，先明确三个问题：
-1. 主要风格是什么？
-2. 听众应该感受到什么？
-3. 这首作品将用于什么场景？
-
-如果无法清晰回答这三个问题，模型就会靠“猜”来补全，输出结果就会变得通用或不一致。
-
-### 3.2 万能 Prompt 公式
-
-经过大量实测验证，以下结构适用于绝大多数文本生成音乐任务：
-
-```
-STYLE（风格） + MOOD（情绪） + TEMPO OR ENERGY（速度/能量） + CORE INSTRUMENTS（核心乐器） + VOCAL DIRECTION（人声方向） + USE CASE（使用场景）
-```
-
-**示例对照**：
-
-| 类型 | 错误写法 | 正确写法 |
-| :--- | :--- | :--- |
-| 流行 | `Emotional cinematic EDM pop rock song with female vocals, trap drums, orchestral energy` | `Modern pop, bright and confident, mid-tempo, crisp drums and soft synths, female vocals, catchy chorus` |
-| 器乐 | `Beautiful instrumental music` | `Lo-fi ambient track, calm and spacious, slow tempo, soft keys and vinyl texture, instrumental, background music for studying` |
-| 说唱 | `Rap song` | `Melodic rap, introspective and late-night, mid-tempo, warm pads and clean drums, male vocals, verse and hook structure` |
-
-**中文提示词特别建议**：实测发现英文提示词对风格、情绪表达的反馈更精准，编曲完整度也明显更高。建议同一创作需求用中英文各跑一次，对比效果后择优使用。
-
-### 3.3 10 种 Prompt“自杀式写法”避坑清单
-
-| 序号 | ❌ 错误写法 | 问题分析 | ✅ 正确写法 |
+| 分数 | 量化标准 | 一票否决项 | 加分项 |
 | :--- | :--- | :--- | :--- |
-| 1 | `A sad song` | “Sad”有一万种，AI 只能猜测 | `Slow minor key ballad, lonely piano, female vocals, rainy night atmosphere, 72 BPM` |
-| 2 | `Epic, powerful, amazing, beautiful song` | 这些词对 AI 来说等于“请自由发挥” | `Cinematic orchestra, building intensity, dramatic brass swells, powerful male choir` |
-| 3 | `A rock song with guitar` | 什么吉他？电的？木的？失真？清音？ | `Garage rock, Fender Telecaster crisp strumming, tube amp overdrive, driving drums` |
-| 4 | `EDM` | EDM 是大类，写出来 80% 是土嗨 | `Deep house, warm analog synth pads, four-on-the-floor 122 BPM, rolling bassline` |
-| 5 | 信息轰炸式堆砌 | AI 不知道你要什么，自己也不确定 | 选 1 个核心风格 + 1 个核心乐器 + 1 个清晰人声设定 |
-| 6 | 歌词与风格打架 | 风格选重金属，歌词写“花儿软软的开” | 音乐和叙事必须统一，风格与歌词情绪保持一致 |
-| 7 | `像周杰伦` / `in the style of` | 触发版权限制，且 AI 无法精确复刻 | 使用声乐特征描述词组合替代（见 3.6 节） |
-| 8 | 只写结构词不加描述 | `[Verse] [Chorus] [Bridge]` 写得很完整但没内容 | 配合描述：`[Intro: Soft clean guitar, ambient pads]` |
-| 9 | 没有动态变化 | 从头到尾一个能量级别 | 加入 `soft verse, building pre-chorus, explosive chorus` 等动态描述 |
-| 10 | 过长/过短歌词 | 每行英文超过 10 词，中文超过 7 字 | 英文 7–10 词，中文 5–7 字 |
+| **1 分** | ① 无任何混音相关标签；② 仅有无意义标签（如 `good mix`） | 无混音标签直接 1 分 | — |
+| **2 分** | ① 包含至少 1 个混音质量标签（如 `clear mix`）；② 无频率/动态相关描述 | — | — |
+| **3 分** | ① 包含至少 2 个混音相关标签，覆盖清晰度与动态两个方向（如 `vocal clarity enhanced` + `controlled dynamics`）；② 标签与风格方向一致 | — | — |
+| **4 分** | ① 上述全部满足；② 包含至少 1 个频率控制标签（如 `tight bass` 或 `smooth high end`）；③ 包含至少 1 个立体声场描述（如 `wide stereo`） | — | — |
+| **5 分** | ① 上述全部满足；② 包含 LUFS 响度标准（如 `-14 LUFS`）；③ 包含至少 3 个频率/动态/空间综合标签；④ 无冲突标签 | 标签之间存在明显冲突（如 `compressed` + `high dynamic range` 同时出现）直接扣至 3 分 | 包含具体 dB 数值（如 `vocals mixed 2.5dB above`）+0.5 |
 
-### 3.4 歌词发音量化排查规则（新增）
+---
 
-为避免 Suno 在演唱中文时因连续上声（第三声）导致的发音扭曲或机械感，请在歌词定稿后执行以下自查流程：
+### V5 空间与混响标签具体性（权重 8%）
 
-**连续三声字排查表**
+**评估对象**：Styles 文本
 
-| 三声字数量 | 示例短语 | Suno 演唱风险 | 建议处理方式 |
+| 分数 | 量化标准 | 一票否决项 | 加分项 |
 | :--- | :--- | :--- | :--- |
-| 0–1 个 | 天空、远方 | ✅ 低风险 | 无需处理 |
-| 2 个连续 | 我想你（wǒ xiǎng nǐ） | ⚠️ 中风险：首字可能被拉平为二声 | 优先保留，若听感不佳再替换同义词（如“我”改“偶”但谨慎使用） |
-| 3 个连续 | 我永远想你（wǒ yǒng yuǎn xiǎng nǐ） | 🔴 高风险：发音严重错误，机械化明显 | **必须修改**：更换词语或插入虚词断开（如“我啊永远想你”） |
+| **1 分** | ① 无任何空间/混响标签；② 仅有 `reverb` 无任何修饰 | 无空间标签直接 1 分 | — |
+| **2 分** | ① 包含 1 个混响规模标签（如 `medium reverb`）；② 无延迟相关标签 | — | — |
+| **3 分** | ① 包含混响规模 + 延迟类型（如 `medium hall reverb` + `slapback delay`）；② 延迟时间明确或可推断 | — | — |
+| **4 分** | ① 上述全部满足；② 包含至少 1 个空间定位词（如 `intimate close-mic` 或 `wide soundstage`）；③ 混响与延迟描述与风格匹配 | — | — |
+| **5 分** | ① 上述全部满足；② 包含具体的延迟时间（如 `1/8 note delay`）或混响时长（如 `1.2s reverb tail`）；③ 包含不同乐器/人声的差异化空间描述 | 混响规模与风格严重不符（如朋克摇滚配 `cathedral reverb`）直接扣至 3 分 | 包含精确时间数值 +0.5 |
 
-**操作建议**：
-- 可使用在线拼音标注工具快速标出每字的声调。
-- 将歌词分行导入 Excel，用条件格式高亮连续出现的 `3`（代表三声），肉眼定位风险段落。
-- 若出现高风险短语且无法替换，可在 Suno 提示词中加入 `natural mandarin pronunciation` 辅助修正，但最佳方案仍是**源头规避**。
+---
 
-### 3.5 BPM 与节奏控制高级技巧
+### V6 低频标签类型明确性（权重 5%）
 
-在 Suno 中，“速度”并非一个单独的参数按钮，而是通过提示词里的音乐语言来“暗示”模型。
+**评估对象**：Styles 文本
 
-| 目标速度 | 推荐标签组合 | 适合风格 |
-| :--- | :--- | :--- |
-| 极慢 (60–75) | `slow tempo, half-time feel, laid-back` | 抒情、叙事、Ballad |
-| 中慢 (75–90) | `mid-tempo, relaxed groove` | R&B、流行、民谣 |
-| 中速 (90–120) | `mid-tempo, steady beat` | 流行摇滚、电子流行 |
-| 快速 (120–140) | `upbeat, driving rhythm, energetic` | 摇滚、舞曲、电子 |
-| 极快 (140+) | `fast tempo, double-time feel` | 朋克、金属、硬核 |
-
-**BPM 锁定**：必须使用 `exactly [数字] BPM`，否则 Suno 可能产生 ±8 BPM 的速度偏移。
-
-### 3.6 桥段（Bridge）提示词高级技巧
-
-桥段是歌曲打破自身模式的瞬间。很多 AI 生成的歌曲之所以听起来重复，就是因为从未引入对比。
-
-**优秀桥段的关键特征**：
-- 与主歌/副歌相比有明显变化（情绪、能量或视角）
-- 新的意象，或在同一主题上给出新角度
-- 段落更短（通常 4–8 行）
-- 强度的上扬或下沉是“有意为之”的感觉
-- 一句干净的“回归句”，为最终副歌做铺垫
-
-**可直接复制的桥段提示词模板**：
-
-| 场景 | 提示词 |
-| :--- | :--- |
-| **视角翻转** | `Write a short bridge (6 lines) that flips perspective from "I" to "you", adds a new realization, stays on the same theme, and ends with a clear line back to the final chorus.` |
-| **能量抬升** | `Generate a bridge that builds intensity step by step (more urgent, brighter tone), 4–6 lines, then end with a strong setup line so the final chorus hits harder.` |
-| **安静下坠再回归** | `Create a bridge that briefly drops into quiet vulnerability, simpler words, slower feel, 6 lines, then use a confident return line to transition back to the chorus.` |
-| **脆弱坦白** | `Write a bridge like a vulnerable confession, intimate tone, concrete imagery, 6 lines, emotional peak at line 5, then use the last line to lead into the chorus.` |
-
-### 3.7 情绪控制（高级玩家维度）
-
-新手写提示词关注“风格”，高手关注“情绪”。
-
-| 层次 | 写法 | 效果 |
-| :--- | :--- | :--- |
-| **新手** | `pop / rock / hiphop` | 给模型的，结果泛化 |
-| **高手** | `restrained sadness / nostalgic but hopeful / quiet confidence / controlled anger` | 给听众的，精准击中某一类人在某一秒的情绪 |
-
-爆款音乐的本质是让某一类人在某一秒被击中。音乐不是作品，是“情绪商品”。
-
-### 3.8 结构控制：面向“可剪辑”而非“完整”
-
-商业场景（短视频、广告等）最重要的不是歌曲的完整性，而是：
-- 前 3 秒能不能抓人
-- 20 秒内有没有情绪高点
-- 能不能循环使用
-
-**高级结构策略**：
-- 刻意做 Hook 开头（副歌前置）
-- 留“剪辑呼吸点”
-- 不是给听歌的人做音乐，而是给剪视频的人做音乐
-
-
-## 第四章：热门风格参数卡模板（直接可用）
-
-### 模板 1：陈奕迅 港式抒情
-
-| 参数项 | 填写内容 |
-| :--- | :--- |
-| **风格名称** | 2000 年代港式粤语抒情 |
-| **参考曲目** | 《富士山下》《K歌之王》《明年今日》 |
-| **BPM** | 68–76 BPM |
-| **调性倾向** | 小调为主 |
-| **和声特征** | `classic pop chord progression` |
-| **旋律特征** | `stepwise melodic lines` |
-| **核心配器** | 钢琴主导、弦乐铺底、原声吉他、轻柔鼓组 |
-| **鼓组特征** | 慢板 4/4 拍、轻柔底鼓、细碎镲片 |
-| **低频特征** | 温暖电贝斯、无 808 |
-| **人声特征** | 男中音、胸声主导、轻微鼻音、大量气声、尾音颤音、情感爆发式演唱 |
-| **和声配置** | 双层和声、副歌加入轻柔背景人声 |
-| **空间效果** | 中等厅堂混响、短延迟 |
-| **人声前置量** | 2–3 dB |
-| **情感词频** | 遗憾、失去、回忆、孤独 ≥8 次 |
-
-**组装后的 Prompt**：
-```
-2000s Hong Kong cantopop ballad, classic pop chord progression, stepwise melodic lines, slow tempo, laid-back groove, grand piano lead, lush string section, fingerpicked acoustic guitar, soft drum kit, warm electric bass, male baritone vocal, chest voice dominant, slight nasal resonance, breathy delivery, emotional belting, natural vibrato, layered background vocals, medium hall reverb, short slapback delay, exactly 72 BPM, minor key, vocals mixed 2.5dB above instruments, cantonese pronunciation clear, modern pop mastering, -14 LUFS, controlled dynamic range, full song structure, pure cantopop ballad style only, no rap, no rock distortion, no electronic elements, no western pop production
-```
-
-### 模板 2：陶喆 华语 R&B
-
-| 参数项 | 填写内容 |
-| :--- | :--- |
-| **风格名称** | 90 年代末华语蓝调 R&B |
-| **参考曲目** | 《普通朋友》《Melody》《爱很简单》 |
-| **BPM** | 75–90 BPM |
-| **调性倾向** | 大调为主 |
-| **和声特征** | `ii-V-I jazz chord changes` |
-| **旋律特征** | `leaping melodic intervals` |
-| **核心配器** | 尼龙弦吉他、Rhodes 钢琴、电贝斯、刷镲鼓组 |
-| **鼓组特征** | 切分律动、刷镲为主、轻柔底鼓 |
-| **低频特征** | 律动型电贝斯、slap bass |
-| **人声特征** | 男高音、混声为主、大量转音、假声运用、轻微黑人唱腔、断层式转音 |
-| **和声配置** | 多层和声、call and response |
-| **空间效果** | 小房间混响、1/8 音符延迟 |
-| **人声前置量** | 1.5–2.5 dB |
-| **情感词频** | 爱情、思念、心碎 ≥6 次 |
-
-**组装后的 Prompt**：
-```
-90s mandarin R&B, ii-V-I jazz chord changes, leaping melodic intervals, laid-back groove, nylon string guitar, warm Rhodes piano, groovy electric bass, brushed snare drum kit, male tenor vocal, mixed voice dominant, smooth falsetto transitions, intricate vocal runs, slight soulful delivery, call and response harmonies, small room reverb, 1/8 note delay, exactly 82 BPM, major key, vocals mixed 2dB above instruments, clear mandarin articulation, modern pop mastering, -14 LUFS, full song structure, pure R&B style only, no rap, no trap 808 bass, no hip hop elements
-```
-
-### 模板 3：周杰伦 中国风 R&B
-
-| 参数项 | 填写内容 |
-| :--- | :--- |
-| **风格名称** | 新世纪中国风 R&B |
-| **参考曲目** | 《东风破》《青花瓷》《发如雪》 |
-| **BPM** | 65–85 BPM |
-| **调性倾向** | 五声小调 |
-| **和声特征** | `classic pop chord progression` |
-| **旋律特征** | `pentatonic scale melodies, stepwise melodic lines` |
-| **核心配器** | 钢琴、古筝/琵琶点缀、二胡间奏、轻柔鼓组 |
-| **鼓组特征** | 慢板切分、轻底鼓、偶尔中国鼓点缀 |
-| **低频特征** | 温暖电贝斯 |
-| **人声特征** | 男中音、含糊咬字风格、轻微鼻音、快速转音、慵懒律动感 |
-| **和声配置** | 双层和声、副歌叠加 |
-| **空间效果** | 中等混响、1/4 音符延迟 |
-| **人声前置量** | 2 dB |
-| **情感词频** | 古风意象词汇（烟雨、江南、月色等） |
-
-**组装后的 Prompt**：
-```
-chinese style R&B, classic pop chord progression, pentatonic scale melodies, stepwise melodic lines, slow tempo, laid-back groove, grand piano lead, traditional chinese instruments guzheng pipa erhu accents, soft drum kit, warm electric bass, male baritone vocal, slight nasal resonance, slurred articulation style, lazy rhythmic delivery, fast vocal runs, layered harmonies in chorus, medium reverb, 1/4 note delay, exactly 72 BPM, pentatonic minor key, vocals mixed 2dB above instruments, mandarin pronunciation stylistic, modern pop mastering, -14 LUFS, full song structure, pure chinese style R&B only, no rock distortion, no western pop production, no rap
-```
-
-### 模板 4：Taylor Swift 风格 流行叙事
-
-| 参数项 | 填写内容 |
-| :--- | :--- |
-| **风格名称** | 2020 年代叙事流行 |
-| **参考曲目** | 《Cruel Summer》《Anti-Hero》《All Too Well》 |
-| **BPM** | 90–120 BPM |
-| **调性倾向** | 大调为主 |
-| **和声特征** | `classic pop chord progression, frequent flat VI chords` |
-| **旋律特征** | `stepwise melodic lines, catchy hook` |
-| **核心配器** | 合成器铺底、清脆鼓组、电吉他、钢琴 |
-| **鼓组特征** | 中速 4/4 拍、清脆底鼓、明亮军鼓 |
-| **低频特征** | 合成器贝斯、律动型 |
-| **人声特征** | 女声、明亮音色、清晰咬字、情感动态强、口语化叙事演唱 |
-| **和声配置** | 副歌双层和声、回声效果 |
-| **空间效果** | 中等混响、短延迟 |
-| **人声前置量** | 2–3 dB |
-| **情感词频** | 故事、回忆、心碎 ≥6 次 |
-
-**组装后的 Prompt**：
-```
-2020s narrative pop, classic pop chord progression, frequent flat VI chords, stepwise melodic lines, catchy hook, mid-tempo, driving beat, synth pads, crisp drums, bright electric guitar accents, piano, synth bass, female vocal, bright clear tone, precise articulation, emotional dynamic range, conversational storytelling delivery, layered harmonies in chorus, medium reverb, short delay, exactly 100 BPM, major key, vocals mixed 2.5dB above instruments, modern pop mastering, -14 LUFS, full song structure, pure pop style only, no rap, no country twang, no rock distortion
-```
-
-### 模板 5：Lana Del Rey 风格 梦幻流行
-
-| 参数项 | 填写内容 |
-| :--- | :--- |
-| **风格名称** | 梦幻流行叙事曲 |
-| **参考曲目** | 《Video Games》《Summertime Sadness》《Born to Die》 |
-| **BPM** | 60–80 BPM |
-| **调性倾向** | 小调为主 |
-| **和声特征** | `frequent flat VI chords` |
-| **旋律特征** | `descending melodic contour` |
-| **核心配器** | 混响电吉他、电影感弦乐、轻柔钢琴、细微 trap 踩镲 |
-| **鼓组特征** | 慢板、半速感、轻柔底鼓 |
-| **低频特征** | 温暖电贝斯 |
-| **人声特征** | 女低音、大量气声、慵懒演唱、忧郁音色、复古颤音、下行滑音 |
-| **和声配置** | 副歌多层和声 |
-| **空间效果** | 大厅堂混响、长尾延迟 |
-| **人声前置量** | 1 dB（略微埋入乐器中） |
-| **情感词频** | 黑暗、破碎、夏日、迷失 ≥6 次 |
-
-**组装后的 Prompt**：
-```
-dream pop ballad, frequent flat VI chords, descending melodic contour, slow tempo, half-time feel, reverb-heavy electric guitar, cinematic strings, soft piano, subtle trap hi-hats, female vocal alto range, extremely breathy delivery, lazy melancholic tone, vintage vibrato, downward melodic slides, layered harmonies in chorus, large hall reverb, subtle delay throws, exactly 72 BPM, minor key, vocals mixed 1dB above instruments, vintage vocal character preserved, natural vocal vibrato, modern pop mastering, -14 LUFS integrated loudness, controlled dynamic range, full song structure, pure dream pop style only, no rap, no rock distortion, no autotune overuse
-```
-
-### 模板 6：K-Pop 偶像团体风格
-
-| 参数项 | 填写内容 |
-| :--- | :--- |
-| **风格名称** | 2020 年代 K-Pop 舞曲 |
-| **参考曲目** | 代表偶像团体曲目 |
-| **BPM** | 110–130 BPM |
-| **调性倾向** | 大小调混合 |
-| **和声特征** | `classic pop chord progression, key change modulation` |
-| **旋律特征** | `catchy hook, rhythmic vocal chops` |
-| **核心配器** | 合成器主导、电子鼓、贝斯、偶尔管乐点缀 |
-| **鼓组特征** | 强劲底鼓、清脆军鼓、密集踩镲 |
-| **低频特征** | 808 贝斯、合成器贝斯 |
-| **人声特征** | 男女声交替、多层和声、高能量演唱、rap 桥段 |
-| **和声配置** | 多层叠加、群体合唱副歌 |
-| **空间效果** | 中等混响、精确延迟 |
-| **人声前置量** | 2–3 dB |
-| **情感词频** | 爱情、自信、青春 ≥6 次 |
-
-**组装后的 Prompt**：
-```
-2020s K-pop dance pop, classic pop chord progression, key change modulation, catchy hook, rhythmic vocal chops, upbeat, energetic, mid-tempo 120 BPM, synth-driven, electronic drums, punchy kick, crisp snare, dense hi-hats, 808 bass, male and female vocals alternating, high-energy delivery, layered harmonies, group chorus, rap verse bridge, medium reverb, precise delay throws, exactly 120 BPM, major-minor blend, vocals mixed 2.5dB above instruments, modern pop mastering, -14 LUFS, full song structure, pure K-pop style only, no rock distortion, no western pop production
-```
-
-### 模板 7：民谣叙事（赵雷 / 宋冬野风格）
-
-| 参数项 | 填写内容 |
-| :--- | :--- |
-| **风格名称** | 华语城市民谣 |
-| **参考曲目** | 《成都》《董小姐》《南山南》 |
-| **BPM** | 60–80 BPM |
-| **调性倾向** | 小调为主 |
-| **和声特征** | `simple chord progression` |
-| **旋律特征** | `stepwise melodic lines, spoken-sung delivery` |
-| **核心配器** | 原声吉他主导、口琴间奏、轻柔钢琴、弦乐铺底 |
-| **鼓组特征** | 轻柔底鼓、刷镲为主 |
-| **低频特征** | 原声贝斯/无贝斯 |
-| **人声特征** | 男声、低沉温暖、口语化演唱、轻微沙哑、真诚叙事感 |
-| **和声配置** | 单轨为主、副歌轻柔叠加 |
-| **空间效果** | 小房间混响、贴耳感 |
-| **人声前置量** | 3 dB |
-| **情感词频** | 城市、回忆、姑娘、酒 ≥6 次 |
-
-**组装后的 Prompt**：
-```
-chinese urban folk, simple chord progression, stepwise melodic lines, spoken-sung delivery, slow tempo, laid-back, acoustic guitar driven, harmonica interlude, soft piano, light string pads, brushed snare, soft kick, acoustic bass or no bass, male vocal, warm baritone, conversational delivery, slight rasp, sincere storytelling tone, single track vocals with soft chorus layering, small room reverb, intimate close-mic feel, exactly 72 BPM, minor key, vocals mixed 3dB above instruments, mandarin pronunciation natural, modern folk mastering, full song structure, pure folk style only, no electronic elements, no rock distortion, no rap
-```
-
-
-## 第五章：十四维度质量评估体系（全面升级版）
-
-基于《听海风》全流程重审，现推出完整的**十四维度评分表**。本表格为所有迭代决策的量化依据。
-
-### 5.1 完整十四维度评分表
-
-| 编号 | 维度 | 权重 | 评分标准 (1–5 分) |
+| 分数 | 量化标准 | 一票否决项 | 加分项 |
 | :--- | :--- | :--- | :--- |
-| V1 | **人声自然度** | 15% | 5=完全拟人，1=明显电音/机械感 |
-| V2 | **风格还原度** | 15% | 5=精准匹配参考风格，1=严重漂移 |
-| V3 | **编曲层次感** | 10% | 5=乐器分离清晰、有前后景深，1=糊成一团 |
-| V4 | **混音清晰度** | 10% | 5=每个声部可辨，1=浑浊不清 |
-| V5 | **空间氛围感** | 8% | 5=混响与声场符合预期，1=干涩或空间错乱 |
-| V6 | **低频控制力** | 5% | 5=贝斯紧实有力不轰头，1=低频浑浊/缺失 |
-| V7 | **高频顺滑度** | 5% | 5=无刺耳齿音/毛刺，1=高频刺耳 |
-| V8 | **动态合理性** | 5% | 5=强弱对比自然，1=全程平铺或突然炸裂 |
-| V9 | **结构完整度** | 10% | 5=段落过渡流畅完整，1=结构残缺或突兀 |
-| V10 | **Hook 记忆点** | 10% | 5=副歌极具辨识度，1=听完无印象 |
-| V11 | **歌词与音乐契合度** | 5% | 5=词曲情绪高度统一，1=词曲情绪冲突 |
-| V12 | **人声前置量合理性** | 3% | 5=人声突出且融合，1=人声被埋或突兀 |
-| V13 | **排除项纯净度** | 2% | 5=无任何禁止元素渗透，1=出现违禁元素 |
-| V14 | **总体听感与商用潜力** | 2% | 5=可直接商用发行，1=不具备商用价值 |
-| | **加权总分** | | **(∑ 单项得分 × 权重) × 20 = 百分制分数** |
+| **1 分** | ① 无任何贝斯/低频标签；② 仅有 `bass` 无修饰 | 无低频标签直接 1 分 | — |
+| **2 分** | ① 包含贝斯类型（如 `electric bass`）；② 无音色/技法修饰词 | — | — |
+| **3 分** | ① 包含贝斯类型 + 至少 1 个音色修饰（如 `warm electric bass`）；② 标签与风格匹配 | — | — |
+| **4 分** | ① 上述全部满足；② 包含演奏技法标签（如 `fingerstyle`、`slap`）；③ 包含低频控制标签（如 `tight bass`） | — | — |
+| **5 分** | ① 上述全部满足；② 明确区分低频乐器类型（如 `synth bass` vs `upright bass` vs `808`）；③ 包含低频与其他声部的关系描述 | 风格明确禁止的贝斯类型出现（如民谣出现 `808 bass`）直接扣至 2 分 | 包含低频频率描述（如 `sub-bass`） +0.5 |
 
-### 5.2 权重动态调整规则（新增）
+---
 
-为适应不同曲风类型，权重可按以下规则调整：
+### V7 高频处理标签精确度（权重 5%）
 
-| 曲风类型 | V1 权重 | V3 权重 | V6 权重 | 调整逻辑 |
-| :--- | :--- | :--- | :--- | :--- |
-| **纯器乐** | 0% | 20% | 10% | 无人声，关注编曲与低频 |
-| **说唱/嘻哈** | 20% | 5% | 10% | 人声为核心，编曲层次次要 |
-| **电子舞曲 (EDM)** | 10% | 10% | 15% | 低频控制力是灵魂 |
-| **民谣/原声** | 15% | 10% | 5% | 默认权重即可 |
+**评估对象**：Styles 文本
 
-**操作建议**：在 Excel 评分模板中设置下拉菜单选择曲风，用 `IF` 或 `VLOOKUP` 函数自动匹配权重列。
+| 分数 | 量化标准 | 一票否决项 | 加分项 |
+| :--- | :--- | :--- | :--- |
+| **1 分** | ① 无任何高频相关标签 | 无高频标签直接 1 分 | — |
+| **2 分** | ① 包含至少 1 个高频音色描述（如 `bright`）；② 无处理类标签 | — | — |
+| **3 分** | ① 包含高频处理标签（如 `smooth high end`）；② 或包含镲片/高频乐器音色描述（如 `crisp hi-hats`） | — | — |
+| **4 分** | ① 上述全部满足；② 包含至少 2 个高频相关标签，覆盖音色与处理两个维度；③ 无“刺耳”风险标签 | — | — |
+| **5 分** | ① 上述全部满足；② 包含主动规避高频问题的标签（如 `no harsh frequencies`）；③ 包含高频增强标签（如 `high-frequency air boost`） | 存在可能导致高频刺耳的标签组合（如 `distorted guitar` + 无高频控制）直接扣至 3 分 | 包含“air”或“sheen”类专业术语 +0.5 |
 
-### 5.3 评分操作流程
+---
 
-1. **初筛阶段**：仅评 V1、V2、V10 三项，快速淘汰低质种子。
-2. **迭代阶段**：每次生成后完整评分，找出得分最低的 1 个维度作为下一轮迭代目标。
-3. **验收阶段**：百分制总分 ≥80 分即为合格，≥90 分为卓越。
+### V8 动态描述标签段落覆盖（权重 5%）
+
+**评估对象**：Styles 文本
+
+| 分数 | 量化标准 | 一票否决项 | 加分项 |
+| :--- | :--- | :--- | :--- |
+| **1 分** | ① 无任何动态相关标签 | 无动态标签直接 1 分 | — |
+| **2 分** | ① 包含至少 1 个整体动态描述（如 `dynamic`）；② 无段落级变化 | — | — |
+| **3 分** | ① 包含段落级动态变化描述（如 `soft verse, explosive chorus`）；② 包含至少 1 个动态控制标签（如 `controlled dynamics`） | — | — |
+| **4 分** | ① 上述全部满足；② 包含至少 2 个段落的差异化动态描述；③ 包含渐进式动态描述（如 `building pre-chorus`） | — | — |
+| **5 分** | ① 上述全部满足；② 包含至少 3 个段落的动态描述，覆盖 intro/verse/chorus/bridge；③ 包含动态规避标签（如 `no explosive chorus`） | 动态描述与风格严重矛盾（如抒情慢歌配 `explosive chorus`）直接扣至 3 分 | 每个额外段落动态描述 +0.2 |
+
+---
+
+### V9 歌词结构标签完整性（权重 10%）
+
+**评估对象**：Lyrics 文本
+
+| 分数 | 量化标准 | 一票否决项 | 加分项 |
+| :--- | :--- | :--- | :--- |
+| **1 分** | ① 无任何结构标签（`[Verse]` 等）；② 仅有纯文本无分段标记 | 无结构标签直接 1 分 | — |
+| **2 分** | ① 包含至少 1 个 `[Verse]` 和 1 个 `[Chorus]`；② 标签使用不规范（如大小写混乱、无方括号） | — | — |
+| **3 分** | ① 包含完整的 `[Verse]`-`[Chorus]`-`[Verse]`-`[Chorus]` 结构；② 标签格式规范（英文方括号，首字母大写）；③ 每个标签独占一行 | — | — |
+| **4 分** | ① 上述全部满足；② 包含 `[Intro]`、`[Bridge]`、`[Outro]` 中的至少 2 种；③ 结构逻辑合理（如 Bridge 出现在第二段副歌之后） | — | — |
+| **5 分** | ① 上述全部满足；② 包含完整标准流行歌曲结构（Intro-V1-Pre-C-V2-Pre-C-Bridge-C-Outro）；③ 每个标签后均有内容；④ 结构顺序符合行业惯例 | 结构顺序混乱（如 Bridge 出现在 Intro 之前）直接扣至 3 分 | 包含小节数标注（如 `[Verse: 8 bars]`）+0.5；包含乐器标注（如 `[Guitar Solo]`）+0.5 |
+
+---
+
+### V10 歌词 Hook 记忆点设计（权重 10%）
+
+**评估对象**：Lyrics 文本
+
+| 分数 | 量化标准 | 一票否决项 | 加分项 |
+| :--- | :--- | :--- | :--- |
+| **1 分** | ① 无重复的副歌段落；② 副歌与主歌无明显区分 | 无副歌直接 1 分 | — |
+| **2 分** | ① 有重复的副歌段落；② 副歌行数 ≤4 行；③ 无明显的律强化手段 | — | — |
+| **3 分** | ① 副歌重复 ≥2 次；② 副歌包含至少 1 种记忆点强化手段（句首重复、尾韵、短语重复）；③ 副歌与主歌在字数/句式上有明显差异 | — | — |
+| **4 分** | ① 上述全部满足；② 副歌包含至少 2 种记忆点强化手段；③ 副歌首句或尾句具备“金句”潜质（可独立传播）；④ 副歌押韵密度 ≥50%（押韵字数/总字数） | — | — |
+| **5 分** | ① 上述全部满足；② 副歌包含至少 3 种记忆点强化手段；③ 副歌押韵密度 ≥70%；④ 副歌旋律可通过歌词音节数推测具备大跳/级进对比；⑤ 副歌长度控制在 4–8 行 | 副歌与主歌歌词内容/情绪完全无区分直接扣至 3 分 | 副歌押韵密度 ≥90% +0.5；副歌含感叹词/呼语（如“Oh”“Baby”）+0.2 |
+
+**Hook 强化手段清单**（用于评分对照）：
+1. 句首重复（如“我多想…我多想…”）
+2. 短语重复（如“跑吧跑吧”）
+3. 尾韵/内韵密集
+4. 对比句式（长短句交替）
+5. 疑问/感叹句式
+6. 标题词反复出现
+
+---
+
+### V11 歌词与 Styles 情绪一致性（权重 5%）
+
+**评估对象**：Lyrics 与 Styles 文本的交叉比对
+
+| 分数 | 量化标准 | 一票否决项 | 加分项 |
+| :--- | :--- | :--- | :--- |
+| **1 分** | ① Styles 中无情绪标签；② 歌词与 Styles 情绪明显相反（如悲伤歌词配 `happy upbeat`） | 情绪明显相反直接 1 分 | — |
+| **2 分** | ① Styles 包含至少 1 个情绪标签；② 歌词情感可识别（正向/负向/中性）；③ 二者方向一致 | — | — |
+| **3 分** | ① Styles 包含至少 2 个情绪标签，覆盖主情绪与次级情绪；② 歌词情感词频统计结果与 Styles 情绪标签匹配度 ≥60%（基于情感词典映射） | — | — |
+| **4 分** | ① 上述全部满足；② 歌词意象与 Styles 情绪标签高度契合（如“雨夜”对应 `melancholic`）；③ 匹配度 ≥80% | — | — |
+| **5 分** | ① 上述全部满足；② 歌词情感走向（如主歌低沉→副歌爆发）与 Styles 动态情绪标签（如 `soft verse, explosive chorus`）逐段对应；③ 匹配度 ≥90% | 匹配度 <50% 直接扣至 2 分 | 包含精确情感词（如 `restrained sadness`） +0.5 |
+
+**情感词典映射规则**：
+- 正向情绪：爱、希望、自由、快乐、自信 → `bright`、`hopeful`、`energetic`
+- 负向情绪：遗憾、失去、孤独、心碎 → `sad`、`melancholic`、`vulnerable`
+- 复合情绪：自嘲式释怀 → `bittersweet`、`self-deprecating`
+- 统计方法：`匹配度 = (一致标签数) / (Styles情绪标签总数) × 100%`
+
+---
+
+### V12 人声前置量标签明确性（权重 3%）
+
+**评估对象**：Styles 文本
+
+| 分数 | 量化标准 | 一票否决项 | 加分项 |
+| :--- | :--- | :--- | :--- |
+| **1 分** | ① 无任何人声混音比例标签 | 无标签直接 1 分 | — |
+| **2 分** | ① 包含方向性描述（如 `vocals forward`）；② 无具体数值 | — | — |
+| **3 分** | ① 包含具体 dB 数值或范围（如 `vocals mixed 2dB above`）；② 数值在合理范围内（1–4 dB） | — | — |
+| **4 分** | ① 上述全部满足；② 包含与其他乐器的相对关系描述（如 `vocals sit above the mix`）；③ 数值符合风格惯例（如民谣 3dB，摇滚 1.5dB） | — | — |
+| **5 分** | ① 上述全部满足；② 数值精确到 0.5dB；③ 与风格、配器密度、情绪相匹配 | 数值明显不合理（如重型摇滚设 4dB）直接扣至 3 分 | 包含频率避让描述（如 `vocals cut through the midrange`）+0.5 |
+
+---
+
+### V13 排除项标签纯净度（权重 2%）
+
+**评估对象**：Styles 文本
+
+| 分数 | 量化标准 | 一票否决项 | 加分项 |
+| :--- | :--- | :--- | :--- |
+| **1 分** | ① 无任何 `no xxx` 排除标签 | 无排除标签直接 1 分 | — |
+| **2 分** | ① 包含 1–2 个排除标签（如 `no rap`）；② 排除标签与风格相关 | — | — |
+| **3 分** | ① 包含 3–4 个排除标签，覆盖最常见的风格漂移方向；② 包含至少 1 个纯正性声明（如 `pure xxx style only`） | — | — |
+| **4 分** | ① 上述全部满足；② 排除标签数量 ≥5 个；③ 包含对特定乐器/音色的排除（如 `no 808 bass`） | — | — |
+| **5 分** | ① 上述全部满足；② 排除标签针对该风格的历史漂移数据进行了精准封堵（如 R&B 风格封堵 `no rock distortion`、`no edm drops`）；③ 排除标签数量 ≥7 个且无冗余 | 排除标签与目标风格冲突（如摇滚封堵 `no distortion`）直接扣至 2 分 | 每个精准封堵的漂移路径 +0.2 |
+
+---
+
+### V14 整体完成度与商用潜力（权重 2%）
+
+**评估对象**：综合前十三项得分
+
+| 分数 | 量化标准 | 一票否决项 | 加分项 |
+| :--- | :--- | :--- | :--- |
+| **1 分** | ① 加权总分 <40（百分制等效） | — | — |
+| **2 分** | ① 加权总分 40–54 | — | — |
+| **3 分** | ① 加权总分 55–69；② 各维度无 1 分项 | — | — |
+| **4 分** | ① 加权总分 70–84；② 核心维度（V1/V2/V9/V10）均 ≥3 分 | — | — |
+| **5 分** | ① 加权总分 ≥85；② 核心维度均 ≥4 分；③ 无任何一票否决触发 | 任何一票否决触发直接扣至 3 分 | — |
+| **6+ 分** | 加权总分 ≥95，且与基准作品差距 ≤5 分 | — | 每超过基准作品 1 分 +0.2 |
 
 
-## 第六章：四阶迭代收敛闭环体系（工业化核心）
+## 第三章：开放式评分计算方法
 
-本体系旨在解决两大核心痛点：“越改越乱”与“无法持续提升”。
+### 3.1 计算步骤
 
-### 6.1 核心原则
+**Step 1：原始分评定**
+- 对照第二章标准，为 V1–V14 每个维度评定原始分 S_i（1–5 分，允许小数，允许 6+）。
 
-- **黄金收敛法则**：每一轮迭代只解决 **1 个核心问题**，每轮调整参数 **≤3 个**。
-- **三振出局原则**：连续 3 轮迭代后总分无提升，立即放弃当前种子，重新开始。
-- **阈值止盈原则**：设定质量阈值（如总分 ≥80 分），达到即停止迭代并归档。
+**Step 2：权重应用**
+- 根据曲风类型选择权重表（见 3.2 节），计算加权得分：`Weighted_Score = Σ (S_i × W_i)`。
 
-### 6.2 第一阶段：种子筛选期
+**Step 3：基准校准**
+- 若已设定参考基准作品，计算 `B_offset` 并加到加权总分上。
+- 若无参考基准，`B_offset = 0`。
 
-| 目标 | 从 3–5 个变体中选出最优基因 |
-| :--- | :--- |
-| **生成次数** | 1 轮，生成 3–5 个变体 |
-| **评估维度** | 仅评 V1（人声）、V2（风格）、V10（Hook） |
-| **决策标准** | 选择三项总分最高的 1 个种子，记录 10 位种子号，其余丢弃 |
+**Step 4：超额加分**
+- 检查各维度是否满足超额加分条件（见各维度加分项列），累加得到 `E_bonus`。
 
-### 6.3 第二阶段：核心问题修复期
+**Step 5：计算最终总分**
+```
+Final_Score = Weighted_Score + B_offset + E_bonus
+```
 
-| 目标 | 定向修复当前版本最严重的 1–2 个问题 |
-| :--- | :--- |
-| **生成次数** | 2–3 轮，每轮生成 2 个变体 |
-| **评估维度** | 完整十四维度评分，锁定最低分项 |
-| **参数调整表** | 见 6.4 节 |
-| **停止条件** | 所有核心维度（V1, V2, V9, V10）得分 ≥ 4 分 |
-
-### 6.4 问题-参数微调矩阵
-
-| 得分最低维度 | 调整参数（不超过 3 个） | 优化方向 |
+**Step 6：转换为可读等级**
+| 最终总分 | 等级 | 商用建议 |
 | :--- | :--- | :--- |
-| **V1 人声自然度** | 人声特征标签、Audio Influence | 增加 `natural vocal breathing`，微调 Audio Influence ±5% |
-| **V2 风格还原度** | 排除标签、风格限定词 | 增加更多 `no xxx`，强化 `pure xxx style only` |
-| **V3 编曲层次感** | 核心配器标签、和声配置 | 增加 2–3 个配器标签，添加 `lush arrangement, clear instrumental separation` |
-| **V4 混音清晰度** | 空间效果、人声前置量 | 调整混响类型，添加 `clear mix, vocal clarity enhanced` |
-| **V5 空间氛围感** | 混响类型、延迟类型 | 更换混响规模（如 `small room` → `medium hall`） |
-| **V6 低频控制力** | 低频特征标签 | 添加 `tight bass, no mud in low end` |
-| **V7 高频顺滑度** | 母带处理标签 | 添加 `smooth high end, no harsh frequencies` |
-| **V8 动态合理性** | 动态描述标签 | 添加 `controlled dynamics, no explosive chorus` |
-| **V9 结构完整度** | 结构标签、段落长度标注 | 明确 `[Verse: 8 bars] [Chorus: 8 bars]` |
-| **V10 Hook 记忆点** | 旋律特征、配器密度 | 添加 `catchy hook, memorable melody, strong chorus hook` |
+| ≥95 | S 级（超越顶级人类） | 可直接发行 |
+| 85–94 | A 级（专业水准） | 可直接商用 |
+| 75–84 | B 级（合格） | 建议微调后商用 |
+| 60–74 | C 级（待改进） | 需重点优化 |
+| <60 | D 级（不合格） | 不可用 |
 
-### 6.5 第三阶段：精细打磨期
+### 3.2 权重动态调整表
 
-| 目标 | 利用 V5.5 局部替换功能优化细节 |
-| :--- | :--- |
-| **操作方式** | 使用 Suno Studio **局部替换**，优先处理 Bridge、Intro、Outro |
-| **增强标签** | 加入 `natural vocal breathing, subtle vocal imperfections, tight bass, clear instrumental separation, high-frequency air boost` |
+| 曲风类型 | V1 | V2 | V3 | V4 | V5 | V6 | V7 | V8 | V9 | V10 | V11 | V12 | V13 | V14 |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **通用流行** | 15% | 15% | 10% | 10% | 8% | 5% | 5% | 5% | 10% | 10% | 5% | 3% | 2% | 2% |
+| **纯器乐** | 0% | 20% | 20% | 12% | 10% | 10% | 5% | 5% | 8% | 5% | 0% | 0% | 3% | 2% |
+| **说唱/嘻哈** | 20% | 12% | 5% | 8% | 5% | 8% | 5% | 5% | 8% | 12% | 8% | 3% | 2% | 2% |
+| **电子舞曲** | 10% | 15% | 12% | 12% | 8% | 15% | 8% | 5% | 5% | 5% | 3% | 2% | 2% | 2% |
+| **民谣/原声** | 15% | 15% | 8% | 8% | 8% | 5% | 5% | 5% | 10% | 10% | 8% | 3% | 2% | 2% |
 
-**局部替换优先级**：
-1. Bridge（最容易拉胯）
-2. Intro 与 Outro（影响听感完整度）
-3. 个别跑调的句子
+> **使用说明**：在评分表中选择曲风，自动匹配权重列。若曲风不在此表，使用“通用流行”权重。
 
-### 6.6 第四阶段：验收与归档期
 
-| 目标 | 确认质量，沉淀资产 |
-| :--- | :--- |
-| **验收标准** | 十四维度加权总分 ≥80 分 |
-| **产出物** | 音频文件、分轨文件、完整迭代日志、最终 Prompt |
-| **归档动作** | 将最终 Prompt 与种子号存入个人风格库对应分类 |
+## 第四章：评分操作流程
 
-### 6.7 迭代日志模板（强制使用）
+### 4.1 准备阶段
+1. 获取待评作品的完整 **Lyrics 文本** 和 **Styles 文本**。
+2. （可选）选定一首人类顶级作品作为参考基准，获取其 Lyrics 与 Styles 文本。
+3. 确定曲风类型，选择对应权重表。
 
-| 项目 | 内容 |
+### 4.2 评分阶段
+1. 按 V1–V13 顺序，逐项对照量化标准打分，记录原始分与依据。
+2. 检查各维度是否触发一票否决项，若触发则按规则调整分数。
+3. 检查各维度是否满足超额加分条件，记录加分值。
+4. 计算加权得分。
+5. 若有参考基准，计算并应用 `B_offset`。
+6. 计算最终总分与等级。
+
+### 4.3 记录阶段
+使用 **标准化评分卡**（见第五章）记录完整评分过程，确保可追溯、可复现。
+
+
+## 第五章：标准化评分卡模板
+
+### 5.1 作品基本信息
+
+| 字段 | 内容 |
 | :--- | :--- |
 | **作品名称** | |
-| **风格类型** | |
-| **参考曲目** | （至少填写 1 首） |
-| **初始种子号** | |
-| **初始评分** | |
-| **迭代轮次** | 修改参数 | 评分变化 | 改进点 |
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| **V5.5 特有参数状态** | Audio Influence: \_\_%, Weirdness: \_\_%, Custom Model: \_\_ | |
-| **最终评分** | |
-| **最终 Prompt** | |
-| **经验总结** | |
+| **曲风类型** | |
+| **Styles 文本** | （粘贴完整 Styles） |
+| **Lyrics 文本** | （粘贴完整 Lyrics） |
+| **参考基准作品** | （如有） |
+| **评分人** | |
+| **评分日期** | |
 
-> **注**：即使未使用 Voices 功能，V5.5 特有参数状态栏也需填写 `N/A`，以确保版本可追溯性。
+### 5.2 逐项评分表
 
+| 维度 | 权重 | 原始分 | 依据简述 | 一票否决触发 | 超额加分 | 加权分 |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| V1 人声标签 | | | | | | |
+| V2 风格标签 | | | | | | |
+| V3 配器标签 | | | | | | |
+| V4 混音标签 | | | | | | |
+| V5 空间标签 | | | | | | |
+| V6 低频标签 | | | | | | |
+| V7 高频标签 | | | | | | |
+| V8 动态标签 | | | | | | |
+| V9 歌词结构 | | | | | | |
+| V10 Hook设计 | | | | | | |
+| V11 词曲情绪 | | | | | | |
+| V12 人声前置 | | | | | | |
+| V13 排除标签 | | | | | | |
+| V14 综合 | | | — | | | |
+| **合计** | 100% | — | | | | |
 
-## 第七章：工业化生产效率提升工具包
+### 5.3 总分计算
 
-### 7.1 批量生成工作流
-
-1. 一次性准备 5–10 组不同主题的歌词。
-2. 使用同一风格参数卡生成所有歌词。
-3. 批量评分筛选出前 20% 的作品。
-4. 针对优秀作品进行微调优化。
-5. 记录高产出的种子号，建立个人种子库。
-
-### 7.2 生产效率自查清单
-
-| 检查项 | 标准 | 未达标后果 |
-| :--- | :--- | :--- |
-| BPM 是否使用 `exactly` | 是 / 否 | 速度漂移 ±8 |
-| 是否包含三层防渗透标签 | 是 / 否 | 风格混杂 |
-| 歌词每行长度是否合规 | 英文 7–10 词，中文 5–7 字 | 被截断或跳过 |
-| 歌词是否通过连续三声字排查 | 是 / 否 | 发音严重错误 |
-| 是否添加人声质量增强标签 | 是 / 否 | 人声生硬或电音感 |
-| 是否添加时长控制标签 | 是 / 否 | 结尾切断或时长不准 |
-| Hook 是否满足量化公式 | 是 / 否 | 记忆点不足 |
-| 是否在 Custom Mode 下运行 | 是 / 否 | 结构控制不稳定 |
-| 是否完成参考曲目锚定检查 | 是 / 否 | Prompt 悬浮、风格不准 |
-
-### 7.3 常见问题快速排查表
-
-| 问题现象 | 最可能原因 | 解决方案 |
-| :--- | :--- | :--- |
-| 生成女声 | Suno 性别识别偏差 | `male vocal only, no female vocals` |
-| 出现说唱段落 | AI 对风格理解偏差 | `absolutely no rap, no spoken word, singing only` |
-| 人声电音感过重 | 过度自动调音 | `natural vocal, minimal autotune, organic vocal performance` |
-| 副歌突然炸裂 | 动态控制不当 | `no explosive chorus, gradual build only, controlled dynamics` |
-| 结尾突然切断 | 长度控制不精准 | `natural fade out ending, no abrupt cut` |
-| 低频浑浊 | 808 与贝斯频率冲突 | `tight 808 bass, no mud in low end` |
-| 乐器糊在一起 | 混音分离度不足 | `instrumental separation clear` |
-| 中文发音不准 | 连续三声字或生僻字 | 排查歌词发音表，替换为常用字 |
-| 编曲太单薄 | 核心配器标签太少 | 增加 2–3 个配器标签，添加 `lush arrangement` |
-| 风格漂移 | 未使用 Custom Models | 上传 6 首参考曲目训练专属模型 |
-
-### 7.4 Suno Studio 分段生成技巧（2026.04 新特性）
-
-v5.5 的 Studio 编辑器支持**局部替换**和**分轨编辑**，可大幅提升后期修歌效率：
-
-1. **先生成核心段落**：优先生成副歌部分，确认人声和风格方向后再扩展到全曲。
-2. **局部重新生成**：对不满意的 Bridge 或 Solo 段落单独重新生成，无需整首重做。
-3. **分轨导出**：利用分轨编辑功能单独调整各音轨的平衡与效果。
-
-
-## 第八章：AI 音乐版权与法律合规指南
-
-### 8.1 当前版权法律环境概览
-
-AI 音乐版权问题在全球范围内仍处于法律灰色地带。截至 2026 年 4 月：
-
-- **印度德里高等法院**在一起案件中明确指出：AI 生成作品的法律框架尚未完善，尚无权威司法先例，并质疑仅通过提供提示词是否足以构成“作者”身份。
-- **德国 GEMA** 已对 Suno 提起诉讼，指控其在训练过程中使用了受版权保护的作曲作品。
-- **三大唱片公司**（环球、索尼、华纳）于 2024 年对 Suno 发起大规模版权诉讼，华纳已达成和解协议。
-- **艺术家代表联盟**发布了“Say No to Suno”公开信，称该平台“未经许可搜刮全球文化成果”。
-
-### 8.2 Suno 2026 年政策重大调整
-
-根据 Suno 与华纳音乐达成的和解协议，2026 年起平台将实施以下关键政策变化：
-
-| 政策项 | 具体内容 |
+| 项目 | 数值 |
 | :--- | :--- |
-| **新授权 AI 模型** | Suno 将推出使用正式授权音乐数据训练的新模型，现有版本将逐步停止服务 |
-| **商业使用权** | 免费账户仅限个人非商业用途；付费账户（Pro / Premier）自动获得商业使用许可 |
-| **版权归属调整** | 即便付费用户拥有商业使用权，“通常不被视为歌曲的所有者”，Suno 保留最终责任权利 |
-| **下载权限** | 从 2026 年起，所有音频下载仅对付费用户开放，免费用户只能在线播放和分享 |
-| **每月下载限额** | 付费用户每月下载量受配额限制，超出需额外付费 |
+| 加权总分 | Σ(原始分 × 权重) = |
+| 基准校准偏移 B_offset | = |
+| 超额加分合计 E_bonus | = |
+| **最终总分** | = |
+| **等级** | |
 
-### 8.3 创作者安全合规操作指南
 
-**⚠️ 绝对禁止的操作**：
-1. **上传他人受版权保护的音频**：尽管 The Verge 测试显示 Suno 的版权过滤器可被轻易绕过（通过变速或加白噪音），但这属于违规行为，可能面临平台封号和法律责任。
-2. **使用受版权保护的歌词**：直接复制粘贴已有歌词将被 Suno 标记为版权内容。
-3. **模仿特定歌手的独特声纹特征**：即使使用描述性组合，也应控制相似度在 70% 以下。
+## 第六章：评分案例示范
 
-**✅ 合规操作建议**：
-1. **验证训练数据来源**：确保所使用的 AI 工具能追溯其训练数据来源。
-2. **进行版权扫描**：在发布前使用深度扫描工具检测与现有作品的相似度。
-3. **嵌入元数据**：导出时嵌入创作者信息和权利归属元数据。
-4. **选择伦理合规的 AI 系统**：优先使用对贡献者进行合理补偿的平台。
-5. **进行原创性验证**：在发布到 YouTube、TikTok 等平台前验证音频的原创性和 IP 状态。
+### 案例一：王力宏 R&B 快歌 × 陈奕迅填词
 
-### 8.4 版权规避黄金法则总结
+**Styles 文本**：
+```
+90s mandarin R&B, funky R&B, ii-V-I R&B chord changes, syncopated melodic phrasing, exactly 104 BPM, warm Rhodes piano lead, clean funky guitar strumming, grooving fingerstyle bass, live drum kit with rim shots, male tenor vocal, mixed voice with falsetto transitions, slight nasal placement, intricate R&B runs, clear articulation, medium hall vocal reverb, vocals mixed 2.5dB above instruments, pure mandarin R&B style only, no ballad, no rap, no 808 bass
+```
 
-| 风险等级 | 操作 | 建议 |
+**Lyrics 文本**：（节选副歌）
+```
+[Chorus]
+转吧 转吧 像公转的星球
+日子在走 我跟着摆动就够
+唱吧 唱吧 转音是我的自由
+反正明天 太阳照样会露头
+```
+
+**逐项评分**：
+
+| 维度 | 原始分 | 依据 |
 | :--- | :--- | :--- |
-| **🔴 高风险** | 使用 `in the style of [Artist]` | 绝对禁止 |
-| **🔴 高风险** | 上传他人受版权保护的音频 | 绝对禁止 |
-| **🔴 高风险** | 复制粘贴已有歌词 | 绝对禁止 |
-| **🟡 中风险** | 人声相似度 > 85% | 控制在 70% 以下 |
-| **🟡 中风险** | 编曲相似度 > 70% | 控制在 60% 以下 |
-| **🟢 低风险** | 使用通用描述性标签组合 | 推荐 |
-| **🟢 低风险** | 创作完全原创歌词 | 推荐 |
-| **🟢 低风险** | 使用 Custom Models 训练自有曲库 | 推荐（需确认曲库版权归属） |
+| V1 | 5.0 | 包含声区(`tenor`)、混声、假声、鼻音位置、转音、咬字，共 7 个标签，覆盖全面，含高阶标签 `intricate R&B runs` |
+| V2 | 5.0 | `90s mandarin R&B` + `funky R&B` + 和声进行 `ii-V-I` + 纯正声明，关键词与《公转自转》标签重叠率 90% |
+| V3 | 4.5 | 包含 Rhodes、吉他、贝斯、鼓组共 4 类，均有音色修饰，有层次词 `lead`，缺次要乐器标签 |
+| V4 | 4.0 | 有 `vocal clarity enhanced`（隐含）、无频率控制标签，缺 LUFS |
+| V5 | 5.0 | 有混响规模 `medium hall`、人声空间，含精确前置量 `2.5dB` |
+| V6 | 4.0 | 有 `fingerstyle bass` + 技法，无低频控制词 |
+| V7 | 3.0 | 仅有 `clear` 可推断高频干净，无专门高频标签 |
+| V8 | 3.5 | 有 `syncopated` 暗示动态，无段落级动态描述 |
+| V9 | 5.0 | 结构完整（V-Pre-C-V-Pre-C-Bridge-Adlib-C-Outro），标签规范 |
+| V10 | 4.5 | 副歌重复 3 次，有短语重复“转吧转吧”、押韵密度 67%（6/9字押韵），金句潜质 |
+| V11 | 4.5 | Styles `funky R&B` + 歌词“自嘲式释怀”匹配，无负面冲突 |
+| V12 | 5.0 | 精确 `2.5dB above`，符合 R&B 惯例 |
+| V13 | 4.0 | 3 个排除标签 + 纯正声明，可增至 5 个 |
+| V14 | 4.5 | 综合预评 |
+
+**加权计算**（通用流行权重）：
+- 加权总分 = 5×0.15 + 5×0.15 + 4.5×0.10 + 4×0.10 + 5×0.08 + 4×0.05 + 3×0.05 + 3.5×0.05 + 5×0.10 + 4.5×0.10 + 4.5×0.05 + 5×0.03 + 4×0.02 + 4.5×0.02
+- = 0.75 + 0.75 + 0.45 + 0.40 + 0.40 + 0.20 + 0.15 + 0.175 + 0.50 + 0.45 + 0.225 + 0.15 + 0.08 + 0.09 = **4.77**（5 分制等效）
+- 转换为百分制等效：4.77 × 20 = **95.4**
+
+**基准校准**：设定《公转自转》目标分 95，实测得 94.5，`B_offset = 0.5`
+**超额加分**：V1 高阶标签 +0.2，V2 重叠率超 85% +0.2，V10 押韵密度接近 +0.2 → 合计 **+0.6**
+**最终总分** = 95.4 + 0.5 + 0.6 = **96.5**（S 级）
 
 
-## 第九章：风格参数卡 Excel 模板
+## 附录 A：高阶标签词库（用于超额加分判定）
 
-以下为工业级批量生产设计的 Excel 模板结构，可直接复制到 Excel / Google Sheets 中使用。
-
-### 9.1 模板字段说明
-
-| 字段名 | 数据类型 | 说明 |
+| 类别 | 高阶标签示例 | 加分值 |
 | :--- | :--- | :--- |
-| **风格ID** | 文本 | 唯一标识，如 `CN-POP-001` |
-| **风格名称** | 文本 | 中文描述，如“2000年代港式粤语抒情” |
-| **参考曲目1/2/3** | 文本 | 用于风格解构的代表曲目 |
-| **BPM_精确** | 数字 | 精确 BPM 值 |
-| **BPM_范围** | 文本 | 如 `68–76` |
-| **调性** | 选项 | `大调 / 小调 / 五声小调 / 自由` |
-| **和声特征** | 文本 | 如 `classic pop chord progression` |
-| **旋律特征** | 文本 | 如 `stepwise melodic lines` |
-| **核心配器1/2/3/4/5** | 文本 | 按优先级排列 |
-| **鼓组特征** | 文本 | 节奏型 + 音色 |
-| **低频特征** | 文本 | 贝斯类型 |
-| **人声_性别** | 选项 | `男 / 女 / 混合 / 群体` |
-| **人声_声区** | 文本 | 如 `baritone / tenor / alto / soprano` |
-| **人声_特征1/2/3/4/5** | 文本 | 鼻音/气声/颤音等 |
-| **和声配置** | 文本 | 如 `双层和声 / call and response` |
-| **混响类型** | 文本 | 如 `medium hall reverb` |
-| **延迟类型** | 文本 | 如 `short slapback delay` |
-| **人声前置量_dB** | 数字 | 1–4 dB |
-| **情感核心词** | 文本 | 如 `遗憾 失去 回忆` |
-| **情感词频_最低** | 数字 | 5–8 |
-| **完整Prompt** | 文本 | 自动组装或手动填写 |
-| **生成批次** | 文本 | 批次编号，便于追踪 |
-| **种子号** | 文本 | 10 位数字，用于复用 |
-| **十四维度总分** | 数字 | 百分制得分 |
-| **评级** | 选项 | `卓越(≥90)/优秀(80-89)/合格(70-79)/不合格(<70)` |
-| **迭代轮次** | 数字 | 实际迭代次数 |
-| **Audio Influence** | 数字/文本 | 如未使用填 `N/A` |
-| **Custom Model** | 文本 | 使用的模型名称，未使用填 `N/A` |
-| **备注** | 文本 | 改进方向/变体说明 |
-
-### 9.2 Excel 公式建议
-
-**Prompt 自动组装公式**：
-```
-=[风格名称] & ", " & [和声特征] & ", " & [旋律特征] & ", " & [核心配器1] & ", " & [核心配器2] & ", " & [鼓组特征] & ", " & [低频特征] & ", " & [人声_性别] & " vocal, " & [人声_声区] & ", " & [人声_特征1] & ", " & [人声_特征2] & ", exactly " & [BPM_精确] & " BPM, " & [调性] & ", vocals mixed " & [人声前置量_dB] & "dB above instruments, modern pop mastering, full song structure, pure " & [风格名称] & " style only"
-```
-
-**权重动态计算（以曲风为触发条件）**：
-```
-=IF([曲风]="纯器乐", V1*0 + V3*0.2 + V6*0.1 + ... , 默认权重公式)
-```
-建议在 Excel 中预置不同曲风的权重表，通过 `VLOOKUP` 实现动态取值。
+| **人声** | `subtle nasal placement`、`melismatic runs`、`controlled rasp`、`vocal fry`、`head voice dominant` | 0.2/个 |
+| **配器** | `Rhodes mk1`、`tape echo`、`room mic drum sound`、`felt piano`、`analog synth bass` | 0.2/个 |
+| **混音** | `glue compression`、`mid-side processing`、`analog warmth`、`tape saturation` | 0.2/个 |
+| **和声** | `borrowed chord`、`secondary dominant`、`chromatic mediant` | 0.3/个 |
+| **空间** | `EMT 140 plate reverb`、`Echoplex delay`、`spring reverb` | 0.2/个 |
 
 
-## 第十章：工业化实战避坑指南
+## 附录 B：一票否决项速查表
 
-### 10.1 八大核心避坑法则
-
-基于 1000+ 次生成实测及《听海风》案例复盘总结：
-
-| 避坑法则 | 核心要点 | 来源 |
+| 维度 | 一票否决条件 | 处罚 |
 | :--- | :--- | :--- |
-| **先定大框架，再补细节** | 将风格、主导乐器、人声类型等关键信息放在提示词最前端 | 实测验证 |
-| **明确音色、节奏与情绪维度** | 仅有“摇滚”“流行”标签远远不够，需回答主导乐器、人声类型、节奏快慢、整体情绪四个问题 | 实测验证 |
-| **善用“排除法”** | “告诉 AI 不要什么”和“告诉它要什么”同等重要 | 实测验证 |
-| **用结构标签搭建歌曲骨架** | 在提示词中加入 [Intro] [Verse] [Chorus] [Bridge] 并配合具体描述 | 实测验证 |
-| **明确标注器乐高光时刻** | 例如 `[Guitar Solo: melodic, bluesy, mid-tempo]` | 实测验证 |
-| **开启 Custom Mode** | 系统将严格依据 [Verse]、[Chorus] 等元标签匹配情绪与配器逻辑 | 官方推荐 |
-| **合理设置 Audio Influence** | 摇滚类推荐 70%–80%，古风类推荐 85%–95% | 实测优化 |
-| **避免在 Prompt 中出现艺人名** | 使用“年代+地域+风格+人声特征”组合替代 | 版权规避 |
-| **迭代日志强制记录 V5.5 参数** | 即使未使用 Voices 也要标注 `N/A`，确保版本可追溯 | 流程复盘新增 |
-| **歌词源头排查连续三声字** | 在写词阶段即规避，避免 Suno 演唱变形 | 流程复盘新增 |
-
-### 10.2 版本差异适配指南
-
-| 对比维度 | Suno V4.5 | Suno V5 | Suno V5.5 |
-| :--- | :--- | :--- | :--- |
-| **核心定位** | 风格扩容+长时长 | 音质全面升级 | 私人定制+个性化全链路 |
-| **人声能力** | 基础角色声线 | 真人化人声 | 支持自定义音色克隆 |
-| **风格创作** | 基础流派混搭 | 上千曲风精准识别 | 可训练私人专属曲风模型 |
-| **提示词理解** | 基础结构指令 | 复杂编曲高遵守率 | 自带偏好记忆，智能适配 |
-| **编辑器** | 基础剪辑 | Studio基础分轨+MIDI | Studio全功能增强，局部替换 |
-
-### 10.3 人声克隆与 Custom Models 的避坑要点
-
-1. **Voices 功能的数据风险**：启用前必须勾选数据授权协议，你的声音数据将被用于全局模型训练。建议使用声音克隆前评估数据隐私风险。
-2. **Custom Models 的曲目要求**：需上传至少 6 首**自有版权**的原创曲目。若上传他人作品训练模型，可能引发版权纠纷。
-3. **声音验证需风格一致**：如果上传的是演唱声音，就应该用演唱的方式完成验证短语，而不是平淡地朗读。
-4. **相似度控制**：Audio Influence 参数不宜调至 100%，过高可能触发平台的版权保护机制。
-
-
-## 附录：通用标签分类词汇库（Suno V5.5 增强版）
-
-| 类别 | 标签示例 |
-| :--- | :--- |
-| **节奏型** | `laid-back`、`syncopated`、`four-on-the-floor`、`half-time feel`、`double-time`、`swing` |
-| **低频型** | `808 sliding bass`、`warm sub-bass`、`distorted 808`、`upright bass`、`synth bass pluck` |
-| **鼓组型** | `crisp snap`、`trap hi-hat rolls`、`soft kick`、`muted kick`、`heavy snare`、`acoustic drum kit` |
-| **合成器型** | `bright pluck`、`warm pad`、`Rhodes piano`、`dark atmospheric pad`、`ethereal synth` |
-| **原声型** | `fingerpicked acoustic guitar`、`light strumming`、`grand piano`、`string section`、`brass stabs` |
-| **人声型** | `nasal resonance`、`breathy delivery`、`chest voice`、`falsetto`、`belt`、`vibrato`、`close-mic` |
-| **空间型** | `spacious reverb`、`short room reverb`、`cathedral reverb`、`slapback delay`、`long throw delay` |
-| **混音型** | `vocals forward`、`vocals buried`、`wide stereo`、`mono-like`、`compressed`、`dynamic` |
-| **和声型** | `classic pop chord progression`、`ii-V-I jazz chord changes`、`frequent flat VI chords` |
-| **旋律型** | `stepwise melodic lines`、`leaping melodic intervals`、`pentatonic scale melodies` |
-| **情绪型** | `restrained sadness`、`nostalgic but hopeful`、`quiet confidence`、`controlled anger` |
-| **增强型** | `vocal clarity enhanced`、`bass tightness improved`、`stereo width optimized`、`natural vocal breathing`、`high-frequency air boost` |
-| **防渗透** | `no rap`、`no rock`、`no country`、`no jazz`、`no classical`、`no edm drops` |
+| V1 | 无人声标签 | 直接 1 分 |
+| V1 | 标签自相矛盾（如 `breathy` + `powerful belts` 同时修饰同一段落） | 扣至 3 分 |
+| V2 | 无风格标签 | 直接 1 分 |
+| V2 | 风格与语言/文化背景矛盾 | 扣至 3 分 |
+| V3 | 无配器标签 | 直接 1 分 |
+| V3 | 乐器标签频率冲突 | 扣至 3 分 |
+| V4 | 无混音标签 | 直接 1 分 |
+| V4 | 标签冲突（如 `compressed` + `high dynamic range`） | 扣至 3 分 |
+| V5 | 无空间标签 | 直接 1 分 |
+| V5 | 混响规模与风格严重不符 | 扣至 3 分 |
+| V6 | 无低频标签 | 直接 1 分 |
+| V6 | 风格禁止的贝斯类型出现 | 扣至 2 分 |
+| V7 | 无高频标签 | 直接 1 分 |
+| V7 | 可能导致高频刺耳的标签组合 | 扣至 3 分 |
+| V8 | 无动态标签 | 直接 1 分 |
+| V8 | 动态描述与风格严重矛盾 | 扣至 3 分 |
+| V9 | 无结构标签 | 直接 1 分 |
+| V9 | 结构顺序混乱 | 扣至 3 分 |
+| V10 | 无副歌 | 直接 1 分 |
+| V10 | 副歌与主歌无区分 | 扣至 3 分 |
+| V11 | 情绪明显相反 | 直接 1 分 |
+| V11 | 匹配度 <50% | 扣至 2 分 |
+| V12 | 无标签 | 直接 1 分 |
+| V12 | 前置量数值明显不合理 | 扣至 3 分 |
+| V13 | 无排除标签 | 直接 1 分 |
+| V13 | 排除标签与目标风格冲突 | 扣至 2 分 |
 
 
-## 附：优化版更新说明
-
-本手册基于 Suno V5.5 2026.04 版本，并经《听海风》工业化全流程重审优化，主要更新如下：
-
-1. **新增“参考曲目锚定检查项”**（第一章 1.3 节）：确保风格解构不悬浮于抽象标签，强制关联具体曲目特征。
-2. **新增“歌词发音量化排查规则”**（第三章 3.4 节）：建立连续三声字排查机制，从源头规避中文发音变形问题。
-3. **升级“十四维度质量评估体系”**（第五章）：完整公开全部维度及权重，新增权重动态调整规则以适应不同曲风。
-4. **固化“四阶迭代收敛闭环体系”**（第六章）：将迭代流程从描述性建议转化为可逐项打钩的 SOP，并强制要求记录 V5.5 特有参数。
-5. **扩展“风格参数卡 Excel 模板”字段**（第九章）：增加迭代轮次、Audio Influence、Custom Model 等 V5.5 专属字段，提升资产追溯能力。
-6. **更新“避坑法则”与“标签词库”**：融入《听海风》实战中验证有效的 `high-frequency air boost`、`clear vocal presence` 等增强型标签。
-
-本手册为风格无关的通用工业标准，具备无限扩展性。掌握五步解构法、十四维度评估体系与四阶迭代闭环后，任何歌手、任何时期的音乐风格均可被系统转化为可执行、可优化、可复现的 Suno 工程文件，从而实现高质量的 AI 音乐工业化生产。
+**本手册自发布之日起生效，后续可根据 Suno 版本更新与用户反馈进行版本迭代。所有评分结果仅代表文本质量，最终音乐成品仍受 Suno 模型生成随机性影响。**
