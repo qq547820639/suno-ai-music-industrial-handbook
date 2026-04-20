@@ -1,6 +1,6 @@
 # Suno AI 音乐文本质量评估与自动优化实施手册
 
-## ——「陈奕迅歌词工程化 × Suno 适配」全流程体系（V2.0 优化版）
+## ——「歌词工程化 × Suno 适配」全流程体系（通用版）
 
 
 ### 前言
@@ -11,7 +11,8 @@
 
 2. **自动优化系统架构**：基于评估结果的问题自动诊断、评分预测、针对性修正、迭代校准的完整工作流。
 
-**V2.0 优化重点**：
+**本版特点**：
+- 纯通用化设计，不依赖特定艺人风格标签。
 - 细化四变量数学模型的可计算锚点，降低人工判断模糊性。
 - 新增「温度参数」与「生成随机性控制」模块。
 - 建立「失败案例库」与反向校准机制。
@@ -21,7 +22,7 @@
 - AI 音乐生成前的 Prompt 质量预检与自动优化
 - 批量生成作品的自动化筛选与评分
 - 不同版本歌词与风格提示词的 A/B 测试
-- 与人类顶级作品的对标分析
+- 与顶级作品的标杆对比分析
 - 自动化优化工具的开发参考
 
 **核心设计原则**：
@@ -54,7 +55,7 @@
 
 | 最终总分 | Lyrics 部分得分 | 等级 | 商用建议 |
 | :--- | :--- | :--- | :--- |
-| ≥95 | ≥450/470（粤）或≥445/465（普） | S+（封神级） | 可直接发行 |
+| ≥95 | ≥450/470（粤）或≥445/465（普） | S+（卓越级） | 可直接发行 |
 | 85–94 | 400–449（粤）或 395–444（普） | S（优秀级） | 可直接商用 |
 | 75–84 | 350–399（粤）或 345–394（普） | A（合格级） | 建议微调后商用 |
 | 60–74 | <350（粤）或<345（普） | B（待改进） | 需重点优化 |
@@ -219,7 +220,7 @@
 | **3 分** | 加权总分 55–69；各维度无 1 分项 | — | — |
 | **4 分** | 加权总分 70–84；核心维度均 ≥3 分 | — | — |
 | **5 分** | 加权总分 ≥85；核心维度均 ≥4 分；无一票否决 | 任何一票否决扣至 3 分 | — |
-| **6+分** | 加权总分 ≥95，且与基准作品差距 ≤5 分 | — | 每超基准 1 分 +0.2 |
+| **6+分** | 加权总分 ≥95，且与标杆作品差距 ≤5 分 | — | 每超标杆 1 分 +0.2 |
 
 
 ### 第三章：Lyrics 部分评分标准（V15–V28）
@@ -400,7 +401,7 @@
 | **<20 分** | 无动态标注 |
 
 
-### 第四章：四变量数学模型（V2.0 优化版）
+### 第四章：四变量数学模型
 
 #### 4.1 寄生动作链系数（PAC）
 
@@ -410,7 +411,7 @@
 PAC = Σ (寄生节点权重 × 寄生形态系数)
 ```
 
-**寄生形态系数**（优化后增加明确文本锚点）：
+**寄生形态系数**（含明确文本锚点）：
 
 | 形态 | 系数 | 文本特征锚点（判定规则） |
 | :--- | :--- | :--- |
@@ -550,7 +551,7 @@ TEE_offset = (TEE / 470 或 465) × 100 - Lyrics加权百分制
 TEE_offset 作为情感模型的修正值，直接加到最终总分中。
 
 
-### 第五章：九大风格分支与 Style Prompt 模板（V2.0 增强版）
+### 第五章：九大风格分支与 Style Prompt 模板
 
 #### 5.1 风格选择决策树
 
@@ -579,12 +580,12 @@ Cantonese male warm baritone piano ballad, 68 BPM unhurried breathing, urban mel
 Mandarin male warm baritone piano ballad, 68 BPM unhurried breathing, urban melancholy, natural vocal grain, slightly breathy intimate, conversational phrasing behind beat, restrained storytelling, zero auto-tune, bridge all instruments cut to bare voice, final chorus voice cracks then falls to breath, ONLY felt piano soft pedal throughout, NO drums bass strings synths, NO vocal doubling, NO pitch correction, temperature=0.7
 ```
 
-> **V2.0 新增**：每个模板均包含推荐 `temperature` 值（0.7–0.9），用于控制生成随机性。慢歌建议较低温度以保证情感一致性，摇滚/歌剧可适当提高温度以增加表现力变化。
+> **说明**：每个模板均包含推荐 `temperature` 值（0.7–0.9），用于控制生成随机性。慢歌建议较低温度以保证情感一致性，摇滚/歌剧可适当提高温度以增加表现力变化。
 
-（其他八种风格模板结构与上述一致，均已内置 temperature 参数和增强的排除标签。）
+（其他八种风格模板结构一致，此处略去以节省篇幅。）
 
 
-### 第六章：失败案例库与反向校准机制（V2.0 新增）
+### 第六章：失败案例库与反向校准机制
 
 #### 6.1 高频失败模式识别表
 
@@ -659,130 +660,67 @@ Mandarin male warm baritone piano ballad, 68 BPM unhurried breathing, urban mela
 
 #### 8.1 V1 人声标签自动补全
 
-**输入**：原始 Styles 文本、语言、风格分支
-
-**输出**：优化后的人声标签列表
-
 **规则**：
 1. 基础标签：根据语言选择 `Cantonese male warm baritone` 或 `Mandarin male warm baritone`
 2. 必补维度：气声、颤音、力度、共鸣、咬字、节奏、质感、修音
 3. 风格专属标签：
    - 慢歌钢琴叙事/民谣叙事：追加 `intimate close-mic`
    - Band Sound 撕裂摇滚：追加 `natural vocal cracks`、`from whisper to raw scream`
-4. 检查高阶标签：如有则记录加分
 
 #### 8.2 V2 风格标签精确化
 
-**输入**：原始 Styles 文本、风格分支
-
-**输出**：优化后的风格标签
-
 **规则**：
-1. 根据风格分支匹配模板（见第五章）
+1. 根据风格分支匹配模板
 2. 检查并补全：年代 + 地域 + 主风格 + 子风格 + 特征词
 3. 自动添加纯正性声明：`pure [风格] style only`
-4. 自动添加 BPM 标注
-5. 自动添加 temperature 推荐值
+4. 自动添加 BPM 标注和 temperature 推荐值
 
 #### 8.3 V3–V13 自动补全速查
 
 | 维度 | 缺失时自动添加 | 加分项自动补充 |
 | :--- | :--- | :--- |
-| V3 配器 | 根据风格模板补充核心乐器 + 音色修饰 + 演奏技法 | `felt piano soft pedal`、`Rhodes mk1`、`tape echo` |
+| V3 配器 | 根据风格模板补充核心乐器 + 音色修饰 + 演奏技法 | `felt piano soft pedal`、`Rhodes mk1` |
 | V4 混音 | `clear mix`、`controlled dynamics`、`-14 LUFS` | `vocals mixed 2.5dB above instruments` |
-| V5 空间 | `medium hall reverb`、`slapback delay`、`wide soundstage` | `EMT 140 plate reverb`、`1/8 note delay` |
+| V5 空间 | `medium hall reverb`、`wide soundstage` | `EMT 140 plate reverb` |
 | V6 低频 | `warm electric bass`、`tight bass` | `sub-bass`、`fingerstyle bass` |
-| V7 高频 | `smooth high end`、`crisp hi-hats`、`no harsh frequencies` | `high-frequency air boost` |
-| V8 动态 | `soft verse, powerful chorus`、`building pre-chorus` | `bridge all instruments cut to bare voice` |
+| V7 高频 | `smooth high end`、`no harsh frequencies` | `high-frequency air boost` |
+| V8 动态 | `soft verse, powerful chorus` | `bridge all instruments cut` |
 | V12 人声前置 | `vocals forward`、`vocals mixed 2.5dB above` | `vocals cut through the midrange` |
-| V13 排除 | `no rap`、`no edm drops`、`no vocal doubling` | `NO pitch correction artifacts` |
+| V13 排除 | `no rap`、`no vocal doubling` | `NO pitch correction artifacts` |
 
 
 ### 第九章：Lyrics 模块自动优化规则
 
 #### 9.1 结构标签规范化
 
-**规则**：
-1. 将所有不规范标签转换为标准格式：`[Verse 1]`、`[Chorus]`、`[Bridge]`、`[Outro]` 等
-2. 检查结构完整性，缺失段落自动提示
-3. 确保每个标签独占一行，标签后紧跟歌词内容
+- 统一转换为标准格式：`[Verse 1]`、`[Chorus]`、`[Bridge]`、`[Outro]` 等
+- 检查结构完整性，缺失段落自动提示
 
 #### 9.2 C3AC 副歌 3 双阶弧线自动补全
 
-**输入**：Lyrics 文本、语言
-
-**输出**：优化后的副歌 3 段落
-
-**步骤**：
-1. 提取副歌 3 段落（识别 `[Chorus 3]` 或 `[Final Chorus]`）
-2. 检查识穿句：
-   - 粤语：搜索 `我知`、`原来`、`其实`、`不过`、`只系`、`终于`、`到头来`
-   - 普通话：搜索 `原来`、`其实`、`不过是`、`我终于知道`、`后来才懂`、`到头来`
-   - 若无，在副歌 3 首句或次句位置插入识穿句模板（如「原来我早该知道」/「我知这一切不过」）
-3. 检查认领动词：
-   - 粤语：搜索 `留低`、`唔抆`、`等`、`替`、`当系`、`由佢`、`揸住`、`揽实`、`继续`、`仍然`
-   - 普通话：搜索 `由它`、`留着`、`继续`、`就当是`、`让它`、`放着`、`等着`、`还是`、`依然`
-   - 若无，在副歌 3 末句插入认领句模板，需关联核心物象
+1. 提取副歌 3 段落
+2. 若无识穿句，插入识穿句模板
+3. 若无认领动词，插入认领句模板（关联核心物象）
 
 #### 9.3 NSRQ 负空间自动标注
 
-**输入**：Lyrics 文本、风格
-
-**输出**：标注了精确停顿的 Lyrics
-
-**步骤**：
-1. 定位 Bridge 段落
-2. 在 Bridge 开头插入 `[All Instruments Cut]` 和 `[Naked Voice]`
-3. 按呼吸序列插入停顿：
-   - Bridge 首句后：`[pause 0.5s]`
-   - Bridge 中间：`[pause 2.0s]`
-   - Bridge 倒数第二句后：`[pause 3.0s]`
-4. 在 Outro 末尾添加 `[silence 5.0s]`
+1. 定位 Bridge 段落，插入 `[All Instruments Cut]` 和 `[Naked Voice]`
+2. 按呼吸序列插入：`[pause 0.5s]`、`[pause 2.0s]`、`[pause 3.0s]`
+3. Outro 末尾添加 `[silence 5.0s]`
 
 #### 9.4 动态弧线自动标注
 
-**输入**：Lyrics 文本、风格
+按标准动态弧线添加标注：`[Very Soft]` → `[Building]` → `[Released But Held Back]` → `[Slightly Heavier]` → `[Building Stronger]` → `[More Released]` → `[Naked Voice]` → `[Full Voice, Cracks Open]` → `[Falls to Breath]`
 
-**输出**：标注了完整动态弧线的 Lyrics
+#### 9.5 TSMI 声调匹配度自动检测
 
-**步骤**：
-1. 识别各段落类型
-2. 按标准动态弧线添加标注：
-   - `[Intro]` 后：`[Very Soft]`
-   - `[Pre-Chorus 1]` 前：`[Building]`
-   - `[Chorus 1]` 前：`[Released But Held Back]`
-   - `[Verse 2]` 前：`[Slightly Heavier]`
-   - `[Pre-Chorus 2]` 前：`[Building Stronger]`
-   - `[Chorus 2]` 前：`[More Released]`
-   - `[Bridge]` 后：`[Naked Voice]`
-   - `[Chorus 3]` 前：`[Full Voice, Cracks Open]`
-   - `[Outro]` 前：`[Falls to Breath]`
-
-#### 9.5 TSMI 声调匹配度自动检测与建议
-
-**输入**：Hook 尾字、风格、语言
-
-**输出**：匹配度评分及替换建议
-
-**步骤**：
-1. 提取 Hook 最后一个汉字
-2. 获取其声调及基础分
-3. 根据风格获取匹配系数
-4. 计算 TSMI 值
-5. 若 TSMI < 5，从同韵部中推荐基础分更高的同义字
+1. 提取 Hook 尾字声调及基础分
+2. 根据风格计算 TSMI
+3. 若 TSMI < 5，推荐同韵部更高分声调的同义字
 
 #### 9.6 动词精准度自动提升
 
-**输入**：Lyrics 文本、语言
-
-**输出**：动词优化建议
-
-**规则**：
-1. 识别核心动作词（位于物象动作链上的动词）
-2. 与动词词库对比：
-   - 粤语词库：㩒、搣、攥、渗、抰、揿、捽、搁、𢱕、𠺘
-   - 普通话词库：撕、攥、渗、按、扯、搁、关、揉、钉、刻、埋、吞
-3. 若为平淡动词（如「放」「拿」「走」），推荐替换为词库中的暴力精准动词
+识别核心动作词，若为平淡动词，推荐替换为词库中的精准动词。
 
 
 ### 第十章：评分卡模板与实施表单
@@ -796,49 +734,24 @@ Mandarin male warm baritone piano ballad, 68 BPM unhurried breathing, urban mela
 | 风格分支 | |
 | Styles 文本 | |
 | Lyrics 文本 | |
-| 参考基准作品 | |
-| 评分人 | |
-| 评分日期 | |
+| 标杆作品 | |
+| 评分人/日期 | |
 
 #### 10.2 Styles 部分逐项评分表
 
-| 维度 | 权重 | 原始分 | 依据简述 | 一票否决 | 超额加分 | 加权分 |
+| 维度 | 权重 | 原始分 | 依据 | 一票否决 | 超额加分 | 加权分 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| V1 人声标签 | 15% | | | | | |
-| V2 风格标签 | 15% | | | | | |
-| V3 配器标签 | 10% | | | | | |
-| V4 混音标签 | 10% | | | | | |
-| V5 空间标签 | 8% | | | | | |
-| V6 低频标签 | 5% | | | | | |
-| V7 高频标签 | 5% | | | | | |
-| V8 动态标签 | 5% | | | | | |
-| V9 歌词结构 | 10% | | | | | |
-| V10 Hook 设计 | 10% | | | | | |
-| V11 词曲情绪 | 5% | | | | | |
-| V12 人声前置 | 3% | | | | | |
-| V13 排除标签 | 2% | | | | | |
-| V14 综合 | 2% | | — | | | |
-| **Styles 小计** | 100% | — | | | | Σ= |
+| V1 人声 | 15% | | | | | |
+| ... | ... | | | | | |
+| **小计** | 100% | — | | | | Σ= |
 
 #### 10.3 Lyrics 部分逐项评分表
 
 | 维度 | 层级 | 满分 | 层级系数 | 原始分 | 加权分 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| V15 主题选择 | 重要 | 30 | ×1.0 | | |
-| V16 物化意象 | 重要 | 35 | ×1.0 | | |
-| V17 叙事细节 | 重要 | 35 | ×1.0 | | |
-| V18 动词精准 | 重要 | 25 | ×1.0 | | |
-| V19 口语底色 | 基础 | 25/20 | ×0.8 | | |
-| V20 Hook 设计 | 核心 | 45 | ×1.2 | | |
-| V21 结构建筑 | 核心 | 55 | ×1.2 | | |
-| V22 Bridge 设计 | 核心 | 40 | ×1.2 | | |
-| V23 尾奏处理 | 基础 | 35 | ×0.8 | | |
-| V24 演唱质感 | 基础 | 25 | ×0.8 | | |
-| V25 编曲配置 | 基础 | 25 | ×0.8 | | |
-| V26 留白负空间 | 基础 | 25 | ×0.8 | | |
-| V27 声调协音 | 基础 | 35 | ×0.8 | | |
-| V28 动态弧线 | 核心 | 35 | ×1.2 | | |
-| **Lyrics 小计** | | 470/465 | | | Σ= |
+| V15 主题 | 重要 | 30 | ×1.0 | | |
+| ... | ... | ... | ... | | |
+| **小计** | | 470/465 | | | Σ= |
 
 **Lyrics 加权百分制** = Σ加权分 / Σ(满分 × 层级系数) × 100
 
@@ -846,11 +759,11 @@ Mandarin male warm baritone piano ballad, 68 BPM unhurried breathing, urban mela
 
 | 变量 | 计算过程 | 得分 |
 | :--- | :--- | :--- |
-| PAC | Σ(寄生节点权重 × 寄生形态系数) = | |
-| TSMI | 声调基础分 × 风格匹配系数 × 位置权重 = | |
-| NSRQ | Σ(实际时长/理想时长) × 位置权重 = | |
-| C3AC | 识穿阶得分 × 认领阶得分 = | |
-| TEE | (PAC × 3.0) + (TSMI × 2.0) + (NSRQ × 7) + (C3AC × 22) + 基础分 = | |
+| PAC | Σ(寄生节点权重 × 形态系数) = | |
+| TSMI | 声调基础分 × 匹配系数 × 位置权重 = | |
+| NSRQ | Σ(实际/理想) × 位置权重 = | |
+| C3AC | 识穿阶 × 认领阶 = | |
+| TEE | (PAC×3.0)+(TSMI×2.0)+(NSRQ×7)+(C3AC×22)+基础分 = | |
 | TEE_offset | (TEE / 470 或 465) × 100 - Lyrics 加权百分制 = | |
 
 #### 10.5 总分计算
@@ -883,11 +796,9 @@ Mandarin male warm baritone piano ballad, 68 BPM unhurried breathing, urban mela
 □ PAC 检查：动作链中是否有至少一个「时间寄生」节点？
   □ 出现「记得/那年/曾经/旧/褪色」等时间回溯词
 
-□ 被动发现检查：主歌中是否有「被动发现」瞬间？
-  □ 关键词：「突然发现」「才看见」「原来」「不知不觉」
+□ 被动发现：主歌中是否有「突然发现」「才看见」「原来」等瞬间？
 
-□ 口语底色：是否使用粤语口语词？句式是否短促？
-  □ 避免「的/地/得」等普通话虚词
+□ 口语底色：是否使用粤语口语词？句式是否短促？避免「的/地/得」等普通话虚词。
 ```
 
 #### 11.2 普通话歌词 30 秒快速诊断
@@ -903,21 +814,21 @@ Mandarin male warm baritone piano ballad, 68 BPM unhurried breathing, urban mela
 
 □ PAC 检查：动作链中是否有「时间寄生」节点？
 
-□ 被动发现检查：主歌中是否有「被动发现」瞬间？
+□ 被动发现：主歌中是否有「被动发现」瞬间？
 
 □ 韵部检查：Hook 是否使用江阳辙(ang)或中东辙(eng/ong)？
 ```
 
-#### 11.3 Suno 生成常见错误避坑指南（V2.0 增强版）
+#### 11.3 Suno 生成常见错误避坑指南
 
 ```
 1. 不要在 Styles 中写情绪描述
    ❌ sad, emotional, heartbroken
    ✅ restrained, detached, voice cracks
 
-2. 不要使用「like Eason Chan」标签
-   ❌ sung by Eason Chan
-   ✅ Cantonese male warm baritone, slightly breathy
+2. 不要使用具体艺人标签
+   ❌ like [某歌手]
+   ✅ [语言] male warm baritone, slightly breathy
 
 3. 不要在歌词中使用括号注释
    ❌ （沉默）、（哽咽）、（轻声）
@@ -956,59 +867,46 @@ Mandarin male warm baritone piano ballad, 68 BPM unhurried breathing, urban mela
 ### 附录 A：关键法则速记
 
 1. **写动作不写情绪**
-2. **物象必须有动作链**（出现→接触→转折→落点），且至少一个节点「寄生」到人
+2. **物象必须有动作链**，且至少一个节点「寄生」到人
 3. **Hook ≤ 4 字，重复 ≥ 4 次**，尾字声调与风格匹配
 4. **Bridge = 全曲最脆弱处**：乐器骤停、裸声、一个画面、不解释
 5. **副歌 3 必须完成「识穿→认领」弧线**
 6. **尾奏 = 一个动作 + 沉默**，不给答案
 7. **口语底色**：读出来像一个人在说话
 8. **动词暴力精准**
-9. **Custom Mode 是底线**：关闭 Auto Instrumental 和 Auto Structure
+9. **Custom Mode 是底线**
 10. **停顿必须带秒数**：`[pause 0.5s]` 而非 `[停顿]`
-11. **Temperature 按风格调整**：慢歌低、摇滚高
-12. **失败案例库驱动迭代**：每次音频生成后记录偏差，反向校准评分模型
+11. **Temperature 按风格调整**
+12. **失败案例库驱动迭代**
 
-### 附录 B：高阶标签词库（用于超额加分判定）
+### 附录 B：高阶标签词库（用于超额加分）
 
 | 类别 | 高阶标签示例 | 加分值 |
 | :--- | :--- | :--- |
-| **人声** | `vocal fry on low notes`、`melismatic runs`、`controlled rasp`、`conversational rubato`、`breath intake sounds included` | 0.2/个 |
-| **配器** | `felt piano`、`Rhodes mk1`、`tape echo`、`room mic drum sound`、`analog synth bass` | 0.2/个 |
-| **混音** | `glue compression`、`mid-side processing`、`analog warmth`、`tape saturation` | 0.2/个 |
-| **和声** | `ii-V-I chord changes`、`borrowed chord`、`secondary dominant`、`chromatic mediant` | 0.3/个 |
-| **空间** | `EMT 140 plate reverb`、`Echoplex delay`、`spring reverb` | 0.2/个 |
-| **排除** | `NO pitch correction artifacts`、`NO vocal doubling`、`NO reverb on bridge vocals` | 0.2/个 |
+| 人声 | `vocal fry on low notes`、`melismatic runs`、`controlled rasp` | 0.2/个 |
+| 配器 | `felt piano`、`Rhodes mk1`、`tape echo` | 0.2/个 |
+| 混音 | `glue compression`、`mid-side processing` | 0.2/个 |
+| 和声 | `ii-V-I chord changes`、`borrowed chord` | 0.3/个 |
+| 空间 | `EMT 140 plate reverb`、`Echoplex delay` | 0.2/个 |
+| 排除 | `NO pitch correction artifacts`、`NO vocal doubling` | 0.2/个 |
 
 ### 附录 C：一票否决项速查表
 
 | 维度 | 一票否决条件 | 处罚 |
 | :--- | :--- | :--- |
 | V1 | 无人声标签 | 直接 1 分 |
-| V1 | 标签自相矛盾 | 扣至 3 分 |
 | V2 | 无风格标签 | 直接 1 分 |
-| V2 | 风格与语言/文化背景矛盾 | 扣至 3 分 |
 | V3 | 无配器标签 | 直接 1 分 |
-| V3 | 乐器标签频率冲突 | 扣至 3 分 |
 | V4 | 无混音标签 | 直接 1 分 |
-| V4 | 标签冲突 | 扣至 3 分 |
 | V5 | 无空间标签 | 直接 1 分 |
-| V5 | 混响规模与风格严重不符 | 扣至 3 分 |
 | V6 | 无低频标签 | 直接 1 分 |
-| V6 | 风格禁止的贝斯类型出现 | 扣至 2 分 |
 | V7 | 无高频标签 | 直接 1 分 |
-| V7 | 可能导致高频刺耳的标签组合 | 扣至 3 分 |
 | V8 | 无动态标签 | 直接 1 分 |
-| V8 | 动态描述与风格严重矛盾 | 扣至 3 分 |
 | V9 | 无结构标签 | 直接 1 分 |
-| V9 | 结构顺序混乱 | 扣至 3 分 |
 | V10 | 无副歌 | 直接 1 分 |
-| V10 | 副歌与主歌无区分 | 扣至 3 分 |
 | V11 | 情绪明显相反 | 直接 1 分 |
-| V11 | 匹配度 <50% | 扣至 2 分 |
 | V12 | 无标签 | 直接 1 分 |
-| V12 | 前置量数值明显不合理 | 扣至 3 分 |
 | V13 | 无排除标签 | 直接 1 分 |
-| V13 | 排除标签与目标风格冲突 | 扣至 2 分 |
 
 
-**本手册 V2.0 自发布之日起生效，可作为评估实施与自动化工具开发的参考依据。所有评分结果仅代表文本质量，最终音乐成品仍受 Suno 模型生成随机性影响。建议结合失败案例库持续迭代校准。**
+**本手册通用版自发布之日起生效，可作为评估实施与自动化工具开发的参考依据。所有评分结果仅代表文本质量，最终音乐成品仍受 AI 模型生成随机性影响。建议结合失败案例库持续迭代校准。**
